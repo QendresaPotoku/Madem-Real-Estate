@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+
+# Next.js build output
+.next/
+out/
+build
+
+# Generated / cache
+next-env.d.ts
+*.tsbuildinfo
+
+# Deployment
+.vercel
+
+# Environment files
+.env
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,18 @@
+# Repo-wide safety net.
+# Build output is handled by each folder's own .gitignore (backend/, crm/, web/).
+
+# Dependencies (any depth)
+node_modules/
+
+# Environment files (e.g. root .env used by docker-compose)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

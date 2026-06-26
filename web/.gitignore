@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+
+# Vite build output
+dist
+dist-ssr
+
+# Generated / cache
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*.local
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
