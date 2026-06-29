@@ -6,14 +6,14 @@ export class AddLocationLookups1710000006000 implements MigrationInterface {
   public async up(q: QueryRunner): Promise<void> {
     await q.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto`);
     await q.query(`
-      CREATE TABLE location_countries (
+      CREATE TABLE IF NOT EXISTS location_countries (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name text NOT NULL,
         CONSTRAINT uq_location_countries_name UNIQUE (name)
       )
     `);
     await q.query(`
-      CREATE TABLE location_cities (
+      CREATE TABLE IF NOT EXISTS location_cities (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         country_id uuid NOT NULL REFERENCES location_countries(id) ON DELETE CASCADE,
         name text NOT NULL,
@@ -21,7 +21,7 @@ export class AddLocationLookups1710000006000 implements MigrationInterface {
       )
     `);
     await q.query(`
-      CREATE TABLE location_areas (
+      CREATE TABLE IF NOT EXISTS location_areas (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         city_id uuid NOT NULL REFERENCES location_cities(id) ON DELETE CASCADE,
         name text NOT NULL,
@@ -29,7 +29,7 @@ export class AddLocationLookups1710000006000 implements MigrationInterface {
       )
     `);
     await q.query(`
-      CREATE TABLE location_cadastral_zones (
+      CREATE TABLE IF NOT EXISTS location_cadastral_zones (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         city_id uuid NOT NULL REFERENCES location_cities(id) ON DELETE CASCADE,
         name text NOT NULL,
@@ -86,9 +86,9 @@ export class AddLocationLookups1710000006000 implements MigrationInterface {
   }
 
   public async down(q: QueryRunner): Promise<void> {
-    await q.query(`DROP TABLE IF EXISTS location_cadastral_zones`);
-    await q.query(`DROP TABLE IF EXISTS location_areas`);
-    await q.query(`DROP TABLE IF EXISTS location_cities`);
-    await q.query(`DROP TABLE IF EXISTS location_countries`);
+    await q.query(`DROP TABLE IF EXISTS location_cadastral_zones CASCADE`);
+    await q.query(`DROP TABLE IF EXISTS location_areas CASCADE`);
+    await q.query(`DROP TABLE IF EXISTS location_cities CASCADE`);
+    await q.query(`DROP TABLE IF EXISTS location_countries CASCADE`);
   }
 }
