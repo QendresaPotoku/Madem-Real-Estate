@@ -10,9 +10,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
           {/* Brand Col */}
           <div>
-            <Link href="/" className="inline-flex flex-col mb-6">
-              <span className="font-serif text-3xl tracking-widest font-bold leading-none text-white">MADEM</span>
-              <span className="text-xs tracking-[0.3em] uppercase text-[#F3D8A5] leading-tight mt-1">{t("header.tagline")}</span>
+            <Link href="/" className="inline-flex items-center mb-6">
+              <img src="/Madem_Mark.png" alt="MADEM" className="h-16 w-auto" />
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed mb-6 max-w-sm">
               {t("footer.description")}

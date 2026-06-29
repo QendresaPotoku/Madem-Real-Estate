@@ -55,9 +55,8 @@ export function Header() {
       <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex flex-col z-50">
-          <span className="font-serif text-2xl tracking-widest font-bold leading-none">MADEM</span>
-          <span className="text-[0.65rem] tracking-[0.3em] uppercase text-[#F3D8A5] leading-tight">{t("header.tagline")}</span>
+        <Link href="/" className="flex items-center z-50">
+          <img src="/Madem_Mark.png" alt="MADEM" className="h-12 w-auto" />
         </Link>
 
         {/* Desktop Nav */}

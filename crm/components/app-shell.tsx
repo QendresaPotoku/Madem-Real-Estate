@@ -69,9 +69,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <aside className="flex w-60 flex-col bg-brand text-white">
-        <div className="flex items-center gap-2 px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold font-bold text-brand">M</div>
-          <span className="text-lg font-semibold">MADEM</span>
+        <div className="flex items-center gap-2.5 px-5 py-5">
+          <img src="/Madem_Mark.png" alt="MADEM" className="h-9 w-auto" />
+          <span className="text-lg font-semibold tracking-wide">MADEM</span>
         </div>
         <nav className="flex-1 space-y-0.5 px-3">
           {NAV.map((item) => {

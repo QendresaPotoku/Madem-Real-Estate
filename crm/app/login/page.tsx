@@ -38,8 +38,8 @@ function LoginForm() {
     <div className="flex min-h-screen items-center justify-center bg-brand p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-lg font-bold text-gold">
-            M
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-brand p-2.5">
+            <img src="/Madem_Mark.png" alt="MADEM" className="h-full w-auto" />
           </div>
           <h1 className="text-xl font-semibold text-brand">MADEM CRM</h1>
           <p className="text-sm text-gray-500">Sign in to your account</p>
