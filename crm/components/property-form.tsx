@@ -737,7 +737,7 @@ export function PropertyForm({
       </div>
       )}
 
-      <div className="sticky bottom-0 -mx-6 -mb-5 flex items-center gap-2 border-t border-gray-100 bg-white px-6 py-4">
+      <div className="sticky -bottom-5 -mx-6 -mb-5 flex items-center gap-2 border-t border-gray-100 bg-white px-6 py-4">
         <span className="text-xs text-gray-400">Step {step} of {lastStep}</span>
         <div className="ml-auto flex gap-2">
           {step > 1 && (

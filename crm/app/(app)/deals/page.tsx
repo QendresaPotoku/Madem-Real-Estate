@@ -8,6 +8,7 @@ import { api, req, tx } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { useAgents, useContacts, useProperties } from '@/lib/queries';
 import { Button, Card, Field, Input, Modal, PageHeader, Select, Table } from '@/components/ui';
+import { ContactSelect } from '@/components/contact-select';
 
 const STATUSES = ['OPEN', 'PENDING', 'CLOSED_WON', 'CLOSED_LOST', 'CANCELLED'] as const;
 const STATUS_FILTERS = ['', ...STATUSES] as const;
@@ -472,24 +473,10 @@ function DealModal({ row, onClose, onSubmit, pending }: { row?: DealRow; onClose
         )}
         <div className="grid grid-cols-2 gap-4">
           <Field label="Buyer">
-            <Select value={f.buyerContactId} onChange={(e) => set('buyerContactId', e.target.value)}>
-              <option value="">—</option>
-              {buyers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.fullName} ({c.contactType})
-                </option>
-              ))}
-            </Select>
+            <ContactSelect value={f.buyerContactId} onChange={(id) => set('buyerContactId', id)} options={buyers} placeholder="—" />
           </Field>
           <Field label="Seller">
-            <Select value={f.sellerContactId} onChange={(e) => set('sellerContactId', e.target.value)}>
-              <option value="">—</option>
-              {sellers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.fullName} ({c.contactType})
-                </option>
-              ))}
-            </Select>
+            <ContactSelect value={f.sellerContactId} onChange={(id) => set('sellerContactId', id)} options={sellers} placeholder="—" />
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-4">

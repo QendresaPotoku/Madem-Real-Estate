@@ -22,6 +22,7 @@ type Row = {
   source: string;
   phone: string | null;
   email: string | null;
+  idNumber: string | null;
   notes: string | null;
 };
 
@@ -176,6 +177,7 @@ function ContactsInner() {
             <th className="px-4 py-3">Source</th>
             <th className="px-4 py-3">Phone</th>
             <th className="px-4 py-3">Email</th>
+            <th className="px-4 py-3">ID number</th>
             <th className="px-4 py-3"></th>
           </tr>
         }
@@ -227,6 +229,7 @@ function ContactsInner() {
                 '—'
               )}
             </td>
+            <td className="px-4 py-3 text-gray-600">{c.idNumber || '—'}</td>
             <td className="px-4 py-3">
               <div className="flex justify-end gap-1">
                 <button
@@ -252,7 +255,7 @@ function ContactsInner() {
         ))}
         {!data?.data.length && (
           <tr>
-            <td colSpan={7} className="px-4 py-12 text-center text-sm text-gray-400">
+            <td colSpan={8} className="px-4 py-12 text-center text-sm text-gray-400">
               {isFetching ? (
                 'Loading…'
               ) : anyFilter ? (

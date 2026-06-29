@@ -24,6 +24,9 @@ export class Contact extends AbstractEntity {
   @Column({ type: 'citext', nullable: true })
   email!: string | null;
 
+  @Column({ type: 'text', name: 'id_number', nullable: true })
+  idNumber!: string | null;
+
   @Column({ type: 'enum', enum: CONTACT_TYPES, enumName: 'contact_type' })
   contactType!: ContactType;
 

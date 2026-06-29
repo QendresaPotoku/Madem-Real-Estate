@@ -1213,6 +1213,7 @@ export interface paths {
                                 fullName: string;
                                 phone: string | null;
                                 email: string | null;
+                                idNumber: string | null;
                                 /** @enum {string} */
                                 contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                                 /** @enum {string} */
@@ -1253,6 +1254,7 @@ export interface paths {
                         phone?: string;
                         /** Format: email */
                         email?: string;
+                        idNumber?: string;
                         /** @enum {string} */
                         contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                         /**
@@ -1278,6 +1280,7 @@ export interface paths {
                             fullName: string;
                             phone: string | null;
                             email: string | null;
+                            idNumber: string | null;
                             /** @enum {string} */
                             contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                             /** @enum {string} */
@@ -1333,6 +1336,7 @@ export interface paths {
                             fullName: string;
                             phone: string | null;
                             email: string | null;
+                            idNumber: string | null;
                             /** @enum {string} */
                             contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                             /** @enum {string} */
@@ -1420,6 +1424,7 @@ export interface paths {
                         phone?: string;
                         /** Format: email */
                         email?: string;
+                        idNumber?: string;
                         /** @enum {string} */
                         contactType?: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                         /**
@@ -1445,6 +1450,7 @@ export interface paths {
                             fullName: string;
                             phone: string | null;
                             email: string | null;
+                            idNumber: string | null;
                             /** @enum {string} */
                             contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                             /** @enum {string} */

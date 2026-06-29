@@ -61,6 +61,7 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
           <dl className="space-y-2 text-sm">
             <Row label="Phone" value={c.phone ?? '—'} />
             <Row label="Email" value={c.email ?? '—'} />
+            <Row label="ID number" value={c.idNumber ?? '—'} />
             <Row label="Source" value={c.source} />
             {c.notes && <p className="border-t border-gray-100 pt-2 text-gray-600">{c.notes}</p>}
           </dl>

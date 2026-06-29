@@ -11,6 +11,7 @@ import { AddDealMademCommissionValue1710000004000 } from './migrations/171000000
 import { AddDealCommissionPaid1710000005000 } from './migrations/1710000005000-AddDealCommissionPaid';
 import { AddLocationLookups1710000006000 } from './migrations/1710000006000-AddLocationLookups';
 import { RemoveOpportunityMatchingStatus1710000007000 } from './migrations/1710000007000-RemoveOpportunityMatchingStatus';
+import { AddContactIdNumber1710000008000 } from './migrations/1710000008000-AddContactIdNumber';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -25,6 +26,7 @@ export const AppDataSource = new DataSource({
     AddDealCommissionPaid1710000005000,
     AddLocationLookups1710000006000,
     RemoveOpportunityMatchingStatus1710000007000,
+    AddContactIdNumber1710000008000,
   ],
   namingStrategy: new SnakeNamingStrategy(),
   synchronize: false,

@@ -14,7 +14,6 @@ import {
   TrendingUp,
   Target,
   UserPlus,
-  Users,
 } from 'lucide-react';
 import { api, req, tx } from '@/lib/api';
 import { useNotifications } from '@/lib/queries';
@@ -87,7 +86,7 @@ export default function DashboardPage() {
         <StatCard label="Active listings" value={data.properties.active} sub={`${data.properties.total} total`} href="/properties" />
         <StatCard label="Open opportunities" value={data.opportunities.open} href="/opportunities" />
         <StatCard label="Active contracts" value={data.contracts.active} href="/contracts" />
-        <StatCard label="New leads (7d)" value={data.leads.new7d} href="/contacts" tone="alert" />
+        <StatCard label="New leads (7d)" value={data.leads.new7d} href="/opportunities" tone="alert" />
         <StatCard label="Unread notifications" value={unread} href="/notifications" tone="alert" />
         <StatCard label="Contracts expiring (30d)" value={data.contracts.expiringSoon} href="/contracts" tone="alert" />
         <StatCard label="Viewings today" value={data.viewings.today} href="/viewings" tone="alert" />
@@ -148,10 +147,10 @@ export default function DashboardPage() {
           <h2 className="mb-4 text-sm font-semibold text-gray-700">Needs attention</h2>
           <div className="space-y-4 text-sm">
             <AttnGroup
-              icon={<Users className="h-4 w-4 text-brand" />}
+              icon={<Target className="h-4 w-4 text-brand" />}
               label={`${data.leads.new7d} new lead${data.leads.new7d === 1 ? '' : 's'} in the last 7 days`}
               count={data.leads.new7d}
-              onClick={() => router.push('/contacts')}
+              onClick={() => router.push('/opportunities')}
             />
 
             <AttnGroup

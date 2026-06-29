@@ -19,6 +19,7 @@ const contactResponse = z.object({
   fullName: z.string(),
   phone: z.string().nullable(),
   email: z.string().nullable(),
+  idNumber: z.string().nullable(),
   contactType: z.enum(CONTACT_TYPES),
   source: z.enum(CONTACT_SOURCES),
   notes: z.string().nullable(),
@@ -33,6 +34,7 @@ const createBody = z.object({
   fullName: z.string().min(1),
   phone: z.string().optional(),
   email: z.string().email().optional(),
+  idNumber: z.string().optional(),
   contactType: z.enum(CONTACT_TYPES),
   source: z.enum(CONTACT_SOURCES).default('OTHER'),
   notes: z.string().optional(),
@@ -73,6 +75,7 @@ export async function contactRoutes(app: FastifyInstance) {
             w.where('c.full_name ILIKE :s', { s: `%${search}%` })
               .orWhere('c.email ILIKE :s', { s: `%${search}%` })
               .orWhere('c.phone ILIKE :s', { s: `%${search}%` })
+              .orWhere('c.id_number ILIKE :s', { s: `%${search}%` })
               .orWhere('c.code ILIKE :s', { s: `%${search}%` });
           }),
         );

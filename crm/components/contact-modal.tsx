@@ -14,6 +14,7 @@ export type ContactModalRow = {
   source: string;
   phone: string | null;
   email: string | null;
+  idNumber: string | null;
   notes: string | null;
 };
 
@@ -23,6 +24,7 @@ export type ContactModalBody = {
   source: string;
   phone?: string;
   email?: string;
+  idNumber?: string;
   notes?: string;
 };
 
@@ -43,6 +45,7 @@ export function ContactModal({
     source: row?.source ?? 'WALK_IN',
     phone: row?.phone ?? '',
     email: row?.email ?? '',
+    idNumber: row?.idNumber ?? '',
     notes: row?.notes ?? '',
   });
   const set = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
@@ -58,6 +61,7 @@ export function ContactModal({
             source: f.source,
             phone: f.phone || undefined,
             email: f.email || undefined,
+            idNumber: f.idNumber || undefined,
             notes: f.notes || undefined,
           });
         }}
@@ -66,22 +70,25 @@ export function ContactModal({
         <Field label="Full name">
           <Input value={f.fullName} onChange={(e) => set('fullName', e.target.value)} required />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Type">
-            <Select value={f.contactType} onChange={(e) => set('contactType', e.target.value)}>
-              {CONTACT_TYPES.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Source">
-            <Select value={f.source} onChange={(e) => set('source', e.target.value)}>
-              {SOURCES.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </Select>
-          </Field>
-        </div>
+        <Field label="ID number">
+          <Input value={f.idNumber} onChange={(e) => set('idNumber', e.target.value)} />
+        </Field>
+        {/* Type field hidden for now — contactType defaults to OWNER (see useState above).
+        <Field label="Type">
+          <Select value={f.contactType} onChange={(e) => set('contactType', e.target.value)}>
+            {CONTACT_TYPES.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </Select>
+        </Field>
+        */}
+        <Field label="Source">
+          <Select value={f.source} onChange={(e) => set('source', e.target.value)}>
+            {SOURCES.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </Select>
+        </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Phone">
             <Input value={f.phone} onChange={(e) => set('phone', e.target.value)} />

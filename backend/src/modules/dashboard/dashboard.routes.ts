@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { Between, In, LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
-  Contact,
   Contract,
   ContractReminder,
   Deal,
@@ -152,7 +151,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
         app.repo(Deal).countBy({ status: In(['OPEN', 'PENDING']) }),
         contractRepo.countBy({ status: 'ACTIVE' }),
         contractRepo.countBy({ status: 'ACTIVE', endDate: Between(todayStr, in30Str) }),
-        app.repo(Contact).countBy({ createdAt: MoreThanOrEqual(sevenDaysAgo) }),
+        app.repo(Opportunity).countBy({ createdAt: MoreThanOrEqual(sevenDaysAgo) }),
         viewRepo.countBy({ status: 'SCHEDULED', scheduledAt: Between(startOfToday, endOfToday) }),
         remRepo.countBy({ status: In(['PENDING', 'SENT']), remindAt: LessThanOrEqual(now) }),
         remRepo.find({
