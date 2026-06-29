@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { api, tx } from '@/lib/api';
+import { uploadFile } from '@/lib/upload';
 import { useAgents, useContacts, useLocationLookups } from '@/lib/queries';
 import { Badge, Button, Input, Modal, PageHeader, Select, StatusBadge, Table } from '@/components/ui';
 import { PropertyForm, fromProperty, toPropertyBody, type PropertyFormValues } from '@/components/property-form';
@@ -168,9 +169,19 @@ function PropertiesPageInner() {
   const draftCount = draftMeta?.total ?? 0;
 
   const create = useMutation({
-    mutationFn: async (v: PropertyFormValues) => {
+    mutationFn: async ({ v, images }: { v: PropertyFormValues; images: File[] }) => {
       const { data, error } = await api.POST('/api/properties', { body: toPropertyBody(v) });
       if (error) throw error;
+      // Property exists now → upload each staged photo and attach it. First = cover.
+      if (data && images.length) {
+        for (let i = 0; i < images.length; i++) {
+          const { publicUrl, key } = await uploadFile('properties', images[i]);
+          await api.POST('/api/properties/{id}/images', {
+            params: { path: { id: data.id } },
+            body: { imageUrl: publicUrl, storageKey: key, isCover: i === 0 },
+          });
+        }
+      }
       return data;
     },
     onSuccess: () => {
@@ -428,12 +439,20 @@ function PropertiesPageInner() {
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="New property" wide>
-        <PropertyForm onSubmit={(v) => create.mutate(v)} onCancel={() => setOpen(false)} pending={create.isPending} submitLabel="Create property" />
+        <PropertyForm
+          enableImages
+          onSubmit={(v, images) => create.mutate({ v, images })}
+          onCancel={() => setOpen(false)}
+          pending={create.isPending}
+          submitLabel="Create property"
+        />
       </Modal>
 
       <Modal open={!!editing} onClose={() => setEditing(null)} title={editing ? `Edit ${editing.propertyCode}` : 'Edit property'} wide>
         {editing && (
           <PropertyForm
+            enableImages
+            propertyId={editing.id}
             initial={fromProperty(editing)}
             onSubmit={(v) => update.mutate(v)}
             onCancel={() => setEditing(null)}

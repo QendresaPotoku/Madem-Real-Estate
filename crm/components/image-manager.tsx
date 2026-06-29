@@ -67,7 +67,7 @@ export function ImageManager({ propertyId }: { propertyId: string }) {
     <Card className="p-5">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-700">Images ({images?.length ?? 0})</h3>
-        <Button size="sm" variant="secondary" onClick={() => fileRef.current?.click()} disabled={uploading}>
+        <Button type="button" size="sm" variant="secondary" onClick={() => fileRef.current?.click()} disabled={uploading}>
           <Upload className="h-4 w-4" /> {uploading ? 'Uploading…' : 'Upload'}
         </Button>
         <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onFiles(e.target.files)} />
@@ -88,20 +88,20 @@ export function ImageManager({ propertyId }: { propertyId: string }) {
               )}
               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/50 p-1.5 opacity-0 transition group-hover:opacity-100">
                 <div className="flex gap-1">
-                  <button onClick={() => move(i, -1)} className="rounded bg-white/20 p-1 text-white hover:bg-white/40" title="Move up">
+                  <button type="button" onClick={() => move(i, -1)} className="rounded bg-white/20 p-1 text-white hover:bg-white/40" title="Move up">
                     <ArrowUp className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={() => move(i, 1)} className="rounded bg-white/20 p-1 text-white hover:bg-white/40" title="Move down">
+                  <button type="button" onClick={() => move(i, 1)} className="rounded bg-white/20 p-1 text-white hover:bg-white/40" title="Move down">
                     <ArrowDown className="h-3.5 w-3.5" />
                   </button>
                 </div>
                 <div className="flex gap-1">
                   {!img.isCover && (
-                    <button onClick={() => setCover.mutate(img.id)} className="rounded bg-white/20 p-1 text-white hover:bg-white/40" title="Set cover">
+                    <button type="button" onClick={() => setCover.mutate(img.id)} className="rounded bg-white/20 p-1 text-white hover:bg-white/40" title="Set cover">
                       <Star className="h-3.5 w-3.5" />
                     </button>
                   )}
-                  <button onClick={() => remove.mutate(img.id)} className="rounded bg-white/20 p-1 text-white hover:bg-red-500" title="Delete">
+                  <button type="button" onClick={() => remove.mutate(img.id)} className="rounded bg-white/20 p-1 text-white hover:bg-red-500" title="Delete">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
