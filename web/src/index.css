@@ -5,6 +5,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Center page content with comfortable side gutters on wide screens. */
+@utility container {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem; /* 1280px */
+  padding-inline: 1.5rem;
+  @media (width >= 1024px) {
+    padding-inline: 2.5rem;
+  }
+}
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
