@@ -13,7 +13,7 @@ import { ContactModal } from '@/components/contact-modal';
 import { ShareButton } from '@/components/share-property';
 import { cn } from '@/lib/cn';
 
-const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'VILLA', 'LAND', 'OFFICE', 'SHOP', 'WAREHOUSE', 'BUILDING'] as const;
+const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'VILLA', 'PENTHOUSE', 'LAND', 'OFFICE', 'SHOP', 'WAREHOUSE', 'BUILDING'] as const;
 const LISTING_TYPES = ['SALE', 'RENT'] as const;
 const STATUSES = ['NEW', 'QUALIFIED', 'VIEWING', 'NEGOTIATING', 'WON', 'LOST'] as const;
 const STATUS_FILTERS = ['', ...STATUSES] as const;

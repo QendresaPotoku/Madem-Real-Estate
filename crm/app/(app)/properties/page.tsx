@@ -22,7 +22,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 const STATUSES = ['', 'ACTIVE', 'DRAFT', 'RESERVED', 'SOLD', 'RENTED', 'ARCHIVED'] as const;
 const LISTING_TYPES = ['', 'SALE', 'RENT'] as const;
-const PROPERTY_TYPES = ['', 'APARTMENT', 'HOUSE', 'VILLA', 'LAND', 'OFFICE', 'SHOP', 'WAREHOUSE', 'BUILDING'] as const;
+const PROPERTY_TYPES = ['', 'APARTMENT', 'HOUSE', 'VILLA', 'PENTHOUSE', 'LAND', 'OFFICE', 'SHOP', 'WAREHOUSE', 'BUILDING'] as const;
 
 type PropertyRow = NonNullable<NonNullable<ReturnType<typeof usePropertiesQuery>['data']>['data']>[number];
 

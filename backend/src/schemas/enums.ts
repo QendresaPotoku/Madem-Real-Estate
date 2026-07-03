@@ -14,6 +14,7 @@ export const PROPERTY_TYPES = [
   'APARTMENT',
   'HOUSE',
   'VILLA',
+  'PENTHOUSE',
   'LAND',
   'OFFICE',
   'SHOP',

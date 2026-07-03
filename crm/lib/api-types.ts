@@ -1509,7 +1509,7 @@ export interface paths {
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             city: string;
                             area: string | null;
                             price: number;
@@ -1557,7 +1557,7 @@ export interface paths {
                     order?: "ASC" | "DESC";
                     status?: "DRAFT" | "ACTIVE" | "RESERVED" | "SOLD" | "RENTED" | "ARCHIVED";
                     listingType?: "SALE" | "RENT";
-                    propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                    propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                     city?: string;
                     area?: string;
                     minPrice?: number;
@@ -1588,7 +1588,7 @@ export interface paths {
                                 /** @enum {string} */
                                 listingType: "SALE" | "RENT";
                                 /** @enum {string} */
-                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                                 titleJson: {
                                     en: string;
                                     sq: string;
@@ -1675,7 +1675,7 @@ export interface paths {
                         /** @enum {string} */
                         listingType: "SALE" | "RENT";
                         /** @enum {string} */
-                        propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                        propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                         titleJson: {
                             en: string;
                             sq: string;
@@ -1750,7 +1750,7 @@ export interface paths {
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             titleJson: {
                                 en: string;
                                 sq: string;
@@ -1863,7 +1863,7 @@ export interface paths {
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             titleJson: {
                                 en: string;
                                 sq: string;
@@ -1997,7 +1997,7 @@ export interface paths {
                         /** @enum {string} */
                         listingType?: "SALE" | "RENT";
                         /** @enum {string} */
-                        propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                        propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                         titleJson?: {
                             en: string;
                             sq: string;
@@ -2072,7 +2072,7 @@ export interface paths {
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             titleJson: {
                                 en: string;
                                 sq: string;
@@ -3295,7 +3295,7 @@ export interface paths {
                     sort?: string;
                     order?: "ASC" | "DESC";
                     status?: "NEW" | "QUALIFIED" | "VIEWING" | "NEGOTIATING" | "WON" | "LOST";
-                    propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                    propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                     listingType?: "SALE" | "RENT";
                     assignedAgentId?: string;
                     contactId?: string;
@@ -3322,7 +3322,7 @@ export interface paths {
                                 /** Format: uuid */
                                 assignedAgentId: string | null;
                                 /** @enum {string} */
-                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                                 /** @enum {string} */
                                 listingType: "SALE" | "RENT";
                                 country: string | null;
@@ -3370,7 +3370,7 @@ export interface paths {
                         /** Format: uuid */
                         assignedAgentId?: string;
                         /** @enum {string} */
-                        propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                        propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                         /** @enum {string} */
                         listingType: "SALE" | "RENT";
                         country?: string;
@@ -3408,7 +3408,7 @@ export interface paths {
                             /** Format: uuid */
                             assignedAgentId: string | null;
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             country: string | null;
@@ -3472,7 +3472,7 @@ export interface paths {
                             /** Format: uuid */
                             assignedAgentId: string | null;
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             country: string | null;
@@ -3564,7 +3564,7 @@ export interface paths {
                         /** Format: uuid */
                         assignedAgentId?: string | null;
                         /** @enum {string} */
-                        propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                        propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                         /** @enum {string} */
                         listingType?: "SALE" | "RENT";
                         country?: string;
@@ -3598,7 +3598,7 @@ export interface paths {
                             /** Format: uuid */
                             assignedAgentId: string | null;
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             country: string | null;
@@ -3761,7 +3761,7 @@ export interface paths {
                                 /** @enum {string} */
                                 listingType: "SALE" | "RENT";
                                 /** @enum {string} */
-                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                                 city: string | null;
                                 area: string | null;
                                 budgetMin: number | null;
@@ -6689,7 +6689,7 @@ export interface paths {
                     sort?: string;
                     order?: "ASC" | "DESC";
                     listingType?: "SALE" | "RENT";
-                    propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                    propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                     country?: string;
                     city?: string;
                     area?: string;
@@ -6720,7 +6720,7 @@ export interface paths {
                                 /** @enum {string} */
                                 listingType: "SALE" | "RENT";
                                 /** @enum {string} */
-                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                                 titleJson: {
                                     en: string;
                                     sq: string;
@@ -6822,7 +6822,7 @@ export interface paths {
                             /** @enum {string} */
                             listingType: "SALE" | "RENT";
                             /** @enum {string} */
-                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                             titleJson: {
                                 en: string;
                                 sq: string;
@@ -6994,7 +6994,7 @@ export interface paths {
                         /** @enum {string} */
                         listingType?: "SALE" | "RENT";
                         /** @enum {string} */
-                        propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                        propertyType?: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
                         city?: string;
                         budgetMin?: number;
                         budgetMax?: number;

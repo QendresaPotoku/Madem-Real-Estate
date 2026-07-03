@@ -12,7 +12,7 @@ import { errorMessage, toast } from '@/lib/toast';
 import { useAgents, useContacts, useHeatingTypes, useLocationLookups } from '@/lib/queries';
 
 const LISTING_TYPES = ['SALE', 'RENT'] as const;
-const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'VILLA', 'LAND', 'OFFICE', 'SHOP', 'WAREHOUSE', 'BUILDING'] as const;
+const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'VILLA', 'PENTHOUSE', 'LAND', 'OFFICE', 'SHOP', 'WAREHOUSE', 'BUILDING'] as const;
 const STATUSES = ['DRAFT', 'ACTIVE', 'RESERVED', 'SOLD', 'RENTED', 'ARCHIVED'] as const;
 const ORIENTATIONS = ['NORTH', 'SOUTH', 'EAST', 'WEST'] as const;
 const BUILDING_CONDITIONS = ['NEW_CONSTRUCTION', 'OLD_CONSTRUCTION'] as const;
@@ -32,6 +32,7 @@ export const ATTRIBUTES_BY_TYPE: Record<string, AttrField[]> = {
   APARTMENT: RESIDENTIAL,
   HOUSE: RESIDENTIAL,
   VILLA: RESIDENTIAL,
+  PENTHOUSE: RESIDENTIAL,
   BUILDING: [
     { key: 'living_rooms', label: 'Living units / rooms', type: 'number' },
     { key: 'working_rooms', label: 'Working rooms', type: 'number' },

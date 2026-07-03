@@ -11,7 +11,6 @@ export interface PropertyFilters {
   country: string; // "all" or canonical country name
   city: string; // "all" or canonical city name
   area: string; // "all" or canonical area/neighborhood name
-  cadastralZone: string; // "all" or canonical cadastral zone name
   type: string; // "all" or canonical PropertyType
   bedrooms: string; // "any" or minimum bedroom count as a string
 }
@@ -31,7 +30,6 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
   const [country, setCountry] = useState(initial?.country ?? "all");
   const [city, setCity] = useState(initial?.city ?? "all");
   const [area, setArea] = useState(initial?.area ?? "all");
-  const [cadastralZone, setCadastralZone] = useState(initial?.cadastralZone ?? "all");
   const [type, setType] = useState(initial?.type ?? "all");
   const [bedrooms, setBedrooms] = useState(initial?.bedrooms ?? "any");
   const selectedCountry = locations?.countries.find((c) => c.name === country);
@@ -44,22 +42,15 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
     () => locations?.areas.filter((a) => city === "all" || a.cityId === selectedCity?.id) ?? [],
     [city, locations?.areas, selectedCity?.id],
   );
-  const cadastralZones = useMemo(
-    () => locations?.cadastralZones.filter((z) => city === "all" || z.cityId === selectedCity?.id) ?? [],
-    [city, locations?.cadastralZones, selectedCity?.id],
-  );
   const cityOptions = city !== "all" && !cities.some((c) => c.name === city) ? [...cities, { id: city, countryId: "", name: city }] : cities;
   const areaOptions = area !== "all" && !areas.some((a) => a.name === area) ? [...areas, { id: area, cityId: "", name: area }] : areas;
-  const cadastralOptions = cadastralZone !== "all" && !cadastralZones.some((z) => z.name === cadastralZone)
-    ? [...cadastralZones, { id: cadastralZone, cityId: "", name: cadastralZone }]
-    : cadastralZones;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (variant === "hero") {
       setLocation("/properties");
     } else if (onSearch) {
-      onSearch({ status: activeTab, country, city, area, cadastralZone, type, bedrooms });
+      onSearch({ status: activeTab, country, city, area, type, bedrooms });
     }
   };
 
@@ -99,6 +90,7 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
               <option>{tEnum("propertyType", "Apartment")}</option>
               <option>{tEnum("propertyType", "House")}</option>
               <option>{tEnum("propertyType", "Villa")}</option>
+              <option>{tEnum("propertyType", "Penthouse")}</option>
               <option>{tEnum("propertyType", "Commercial")}</option>
               <option>{tEnum("propertyType", "Land")}</option>
             </select>
@@ -113,7 +105,6 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
                 setCountry(e.target.value);
                 setCity("all");
                 setArea("all");
-                setCadastralZone("all");
               }}
               className="w-full bg-transparent border-none text-gray-900 font-medium focus:ring-0 cursor-pointer appearance-none"
             >
@@ -132,7 +123,6 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
               onChange={(e) => {
                 setCity(e.target.value);
                 setArea("all");
-                setCadastralZone("all");
               }}
               className="w-full bg-transparent border-none text-gray-900 font-medium focus:ring-0 cursor-pointer appearance-none"
             >
@@ -207,11 +197,10 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
               setCountry(e.target.value);
               setCity("all");
               setArea("all");
-              setCadastralZone("all");
             }}
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-[#0B3A36] focus:ring-0 transition-colors"
           >
-            <option value="all">All countries</option>
+            <option value="all">{t("searchFilters.allCountries")}</option>
             {locations?.countries.map((c) => (
               <option key={c.id} value={c.name}>{c.name}</option>
             ))}
@@ -225,7 +214,6 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
             onChange={(e) => {
               setCity(e.target.value);
               setArea("all");
-              setCadastralZone("all");
             }}
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-[#0B3A36] focus:ring-0 transition-colors"
           >
@@ -251,20 +239,6 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-wider text-gray-500 mb-2 block">Cadastral zone</label>
-          <select
-            value={cadastralZone}
-            onChange={(e) => setCadastralZone(e.target.value)}
-            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-[#0B3A36] focus:ring-0 transition-colors"
-          >
-            <option value="all">{t("searchFilters.allCadastralZones")}</option>
-            {cadastralOptions.map((z) => (
-              <option key={z.id} value={z.name}>{z.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
           <label className="text-xs uppercase tracking-wider text-gray-500 mb-2 block">{t("searchFilters.propertyType")}</label>
           <select
             value={type}
@@ -275,6 +249,7 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
             <option value="Apartment">{tEnum("propertyType", "Apartment")}</option>
             <option value="House">{tEnum("propertyType", "House")}</option>
             <option value="Villa">{tEnum("propertyType", "Villa")}</option>
+            <option value="Penthouse">{tEnum("propertyType", "Penthouse")}</option>
             <option value="Commercial">{tEnum("propertyType", "Commercial")}</option>
           </select>
         </div>

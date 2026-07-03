@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useT } from "@/i18n/useT";
 
@@ -19,6 +19,7 @@ export function PropertyMediaGallery({ images, videos }: PropertyMediaGalleryPro
     ...images.map((url) => ({ type: "image" as const, url })),
   ];
   const [current, setCurrent] = useState(0);
+  const thumbStripRef = useRef<HTMLDivElement>(null);
 
   if (media.length === 0) return null;
 
@@ -26,6 +27,8 @@ export function PropertyMediaGallery({ images, videos }: PropertyMediaGalleryPro
   const item = media[index];
   const poster = images[0];
   const go = (dir: -1 | 1) => setCurrent((prev) => (prev + dir + media.length) % media.length);
+  const scrollThumbs = (dir: -1 | 1) =>
+    thumbStripRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
 
   return (
     <div className="space-y-4">
@@ -96,24 +99,51 @@ export function PropertyMediaGallery({ images, videos }: PropertyMediaGalleryPro
         </div>
       )}
 
-      {/* Photos: thumbnail grid */}
+      {/* Photos: single horizontal row with arrow navigation (no wrapping to
+          multiple rows, keeps the gallery compact regardless of photo count). */}
       {images.length > 0 && (
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-          {images.map((img, i) => {
-            const mediaIndex = videos.length + i;
-            return (
+        <div className="relative">
+          <div
+            ref={thumbStripRef}
+            className="flex gap-2 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {images.map((img, i) => {
+              const mediaIndex = videos.length + i;
+              return (
+                <button
+                  key={i}
+                  onClick={() => setCurrent(mediaIndex)}
+                  className={`relative shrink-0 w-24 sm:w-28 aspect-[4/3] rounded-sm overflow-hidden border-2 transition-colors ${
+                    index === mediaIndex ? "border-[#0B3A36]" : "border-transparent hover:border-[#F3D8A5]"
+                  }`}
+                >
+                  <img src={img} alt={t("gallery.thumbnailAlt", { n: i + 1 })} className="w-full h-full object-cover" />
+                  {index !== mediaIndex && <div className="absolute inset-0 bg-black/20 hover:bg-transparent transition-colors" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {images.length > 10 && (
+            <>
               <button
-                key={i}
-                onClick={() => setCurrent(mediaIndex)}
-                className={`relative aspect-[4/3] rounded-sm overflow-hidden border-2 transition-colors ${
-                  index === mediaIndex ? "border-[#0B3A36]" : "border-transparent hover:border-[#F3D8A5]"
-                }`}
+                type="button"
+                aria-label={t("common.previous")}
+                onClick={() => scrollThumbs(-1)}
+                className="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-md text-[#0B3A36] flex items-center justify-center hover:bg-white transition-colors z-10"
               >
-                <img src={img} alt={t("gallery.thumbnailAlt", { n: i + 1 })} className="w-full h-full object-cover" />
-                {index !== mediaIndex && <div className="absolute inset-0 bg-black/20 hover:bg-transparent transition-colors" />}
+                <ChevronLeft className="w-5 h-5" />
               </button>
-            );
-          })}
+              <button
+                type="button"
+                aria-label={t("common.next")}
+                onClick={() => scrollThumbs(1)}
+                className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-md text-[#0B3A36] flex items-center justify-center hover:bg-white transition-colors z-10"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -9,7 +9,7 @@ interface ApiProperty {
   id: string;
   propertyCode: string;
   listingType: "SALE" | "RENT";
-  propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+  propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
   titleJson: Localized;
   descriptionJson: Localized | null;
   price: number;
@@ -36,6 +36,7 @@ interface ApiProperty {
   attributesJson: Record<string, unknown>;
   coverImageUrl: string | null;
   coverVideoUrl: string | null;
+  imageUrls?: string[];
   createdAt: string;
 }
 interface ApiPropertyDetail extends ApiProperty {
@@ -67,6 +68,7 @@ const TYPE_MAP: Record<ApiProperty["propertyType"], PropertyType> = {
   APARTMENT: "Apartment",
   HOUSE: "House",
   VILLA: "Villa",
+  PENTHOUSE: "Penthouse",
   OFFICE: "Office",
   SHOP: "Commercial",
   BUILDING: "Commercial",
@@ -114,7 +116,7 @@ function mapProperty(p: ApiProperty, images?: string[], videos?: string[]): Prop
     garage: (p.garage ?? 0) > 0,
     terrace: !!attrs.terrace,
     airConditioning: !!attrs.airConditioning,
-    images: images ?? (p.coverImageUrl ? [p.coverImageUrl] : []),
+    images: images && images.length ? images : (p.coverImageUrl ? [p.coverImageUrl] : []),
     videoUrl: p.coverVideoUrl ?? undefined,
     videos: videos ?? (p.coverVideoUrl ? [p.coverVideoUrl] : []),
     agentId: p.agentUserId,
@@ -146,7 +148,7 @@ async function getJson<T>(url: string): Promise<T> {
 
 export async function fetchProperties(): Promise<Property[]> {
   const json = await getJson<Paged<ApiProperty>>("/api/public/properties?limit=100&sort=createdAt&order=DESC");
-  return json.data.map((p) => mapProperty(p));
+  return json.data.map((p) => mapProperty(p, p.imageUrls));
 }
 
 export async function fetchProperty(code: string): Promise<Property> {

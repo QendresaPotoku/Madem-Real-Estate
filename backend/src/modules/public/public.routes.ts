@@ -55,6 +55,7 @@ const publicProperty = z.object({
   attributesJson: z.record(z.unknown()),
   coverImageUrl: z.string().nullable(),
   coverVideoUrl: z.string().nullable(),
+  imageUrls: z.array(z.string()).optional(),
   publishedDate: z.string().nullable(),
   createdAt: z.date(),
 });
@@ -129,6 +130,7 @@ const WEB_PROPERTY_TYPE_MAP: Record<string, PropertyType> = {
   apartment: 'APARTMENT',
   house: 'HOUSE',
   villa: 'VILLA',
+  penthouse: 'PENTHOUSE',
   land: 'LAND',
   commercial: 'OFFICE',
   office: 'OFFICE',
@@ -213,12 +215,20 @@ export async function publicRoutes(app: FastifyInstance) {
       if (q.search) qb.andWhere(`p.search_tsv @@ plainto_tsquery('simple', :search)`, { search: q.search });
       const result = await paginate(qb, req.query, { createdAt: 'p.created_at', price: 'p.price' }, 'p.created_at');
 
-      // Batch-load cover images + first video for the page (two queries) and attach.
+      // Batch-load images + first video for the page and attach a cover plus an
+      // ordered image list (cover first, capped) so website cards can flip through photos.
       const ids = result.data.map((p) => p.id);
-      const covers = ids.length
-        ? await app.repo(PropertyImage).find({ where: { propertyId: In(ids), isCover: true } })
+      const allImages = ids.length
+        ? await app.repo(PropertyImage).find({ where: { propertyId: In(ids) }, order: { isCover: 'DESC', sortOrder: 'ASC' } })
         : [];
-      const coverByProp = new Map(covers.map((c) => [c.propertyId, c.imageUrl]));
+      const imagesByProp = new Map<string, string[]>();
+      const coverByProp = new Map<string, string>();
+      for (const img of allImages) {
+        const arr = imagesByProp.get(img.propertyId) ?? [];
+        if (arr.length < 15) arr.push(img.imageUrl);
+        imagesByProp.set(img.propertyId, arr);
+        if (img.isCover && !coverByProp.has(img.propertyId)) coverByProp.set(img.propertyId, img.imageUrl);
+      }
       const videos = ids.length
         ? await app.repo(PropertyVideo).find({ where: { propertyId: In(ids) }, order: { sortOrder: 'ASC' } })
         : [];
@@ -226,11 +236,15 @@ export async function publicRoutes(app: FastifyInstance) {
       for (const v of videos) if (!videoByProp.has(v.propertyId)) videoByProp.set(v.propertyId, v.videoUrl);
       return {
         ...result,
-        data: result.data.map((p) => ({
-          ...p,
-          coverImageUrl: coverByProp.get(p.id) ?? null,
-          coverVideoUrl: videoByProp.get(p.id) ?? null,
-        })),
+        data: result.data.map((p) => {
+          const imgs = imagesByProp.get(p.id) ?? [];
+          return {
+            ...p,
+            coverImageUrl: coverByProp.get(p.id) ?? imgs[0] ?? null,
+            coverVideoUrl: videoByProp.get(p.id) ?? null,
+            imageUrls: imgs,
+          };
+        }),
       };
     });
 

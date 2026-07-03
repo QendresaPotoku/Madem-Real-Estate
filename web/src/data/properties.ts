@@ -1,7 +1,7 @@
 import type { Localized } from "@/i18n/types";
 
 export type PropertyStatus = "For Sale" | "For Rent" | "Reserved" | "Sold";
-export type PropertyType = "Apartment" | "House" | "Villa" | "Office" | "Commercial" | "Land" | "Warehouse";
+export type PropertyType = "Apartment" | "House" | "Villa" | "Penthouse" | "Office" | "Commercial" | "Land" | "Warehouse";
 export type PropertyCondition =
   | "New"
   | "Excellent"

@@ -218,6 +218,18 @@
   }
 }
 
+/* When a Radix overlay (Select/Dialog) opens, react-remove-scroll locks the body
+ * by setting `overflow:hidden` (which removes the scrollbar) and adds a matching
+ * `margin-right` to compensate — that margin is the white strip on the right, and
+ * removing the scrollbar would otherwise reflow the page. We instead keep the
+ * scrollbar visible and drop the margin, so the layout is identical open or
+ * closed; scrolling is still blocked by react-remove-scroll's JS wheel/touch
+ * handlers. The `html body` prefix outranks the library's own `body[...]` rule. */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+  overflow: visible !important;
+}
+
 @layer utilities {
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;

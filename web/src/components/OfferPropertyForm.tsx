@@ -183,6 +183,7 @@ export function OfferPropertyForm() {
                     <SelectItem value="apartment">{tEnum("propertyType", "Apartment")}</SelectItem>
                     <SelectItem value="house">{tEnum("propertyType", "House")}</SelectItem>
                     <SelectItem value="villa">{tEnum("propertyType", "Villa")}</SelectItem>
+                    <SelectItem value="penthouse">{tEnum("propertyType", "Penthouse")}</SelectItem>
                     <SelectItem value="commercial">{t("offerForm.commercialSpace")}</SelectItem>
                     <SelectItem value="land">{tEnum("propertyType", "Land")}</SelectItem>
                   </SelectContent>

@@ -9,7 +9,8 @@ import { TestimonialCard } from "@/components/TestimonialCard";
 import { testimonials } from "@/data/testimonials";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Building2, Home, Landmark, Briefcase, Trees, Factory, ShieldCheck, Award, Clock, Search, ChevronDown, ArrowRight } from "lucide-react";
+import { Building2, Home, Landmark, Briefcase, Trees, Factory, ShieldCheck, Award, Clock, Search, ArrowRight, Globe, MapPin, BedDouble, Hotel } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { useT } from "@/i18n/useT";
 import { useLanguage } from "@/i18n/context";
@@ -32,18 +33,21 @@ export default function HomePage() {
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
-  const [selectedCadastralZone, setSelectedCadastralZone] = useState("all");
   const [selectedBedrooms, setSelectedBedrooms] = useState("any");
 
-  // Cascading location options (country → city → area / cadastral zone), mirrors the
+  // Cascading location options (country → city → area), mirrors the
   // pronat sidebar filters in SearchFilters.
   const selectedCountryObj = locations?.countries.find((c) => c.name === selectedCountry);
   const cities = locations?.cities.filter((c) => selectedCountry === "all" || c.countryId === selectedCountryObj?.id) ?? [];
   const selectedCityObj = cities.find((c) => c.name === selectedCity);
   const areas = locations?.areas.filter((a) => selectedCity === "all" || a.cityId === selectedCityObj?.id) ?? [];
-  const cadastralZones = locations?.cadastralZones.filter((z) => selectedCity === "all" || z.cityId === selectedCityObj?.id) ?? [];
 
-  const heroSelectClass = "w-full bg-transparent text-white text-[13px] py-4 px-5 appearance-none cursor-pointer focus:outline-none";
+  // Styled (Radix) dropdown classes: a borderless trigger that blends into the
+  // dark bar, and a clean padded popover for the options.
+  const heroTriggerClass =
+    "h-auto flex-1 border-0 bg-transparent px-0 py-3.5 text-[13px] font-normal text-white shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-white [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:text-white/40 [&>span]:truncate";
+  const heroContentClass = "max-h-72 min-w-[12rem] rounded-lg";
+  const heroItemClass = "cursor-pointer py-2 pl-3 pr-8 text-[13px]";
 
   const runHeroSearch = () => {
     const params = new URLSearchParams();
@@ -52,7 +56,6 @@ export default function HomePage() {
     if (selectedCountry !== "all") params.set("country", selectedCountry);
     if (selectedCity !== "all") params.set("city", selectedCity);
     if (selectedArea !== "all") params.set("area", selectedArea);
-    if (selectedCadastralZone !== "all") params.set("cadastralZone", selectedCadastralZone);
     if (selectedBedrooms !== "any") params.set("bedrooms", selectedBedrooms);
     setLocation(`/properties?${params.toString()}`);
   };
@@ -61,6 +64,7 @@ export default function HomePage() {
     { name: "Apartment", icon: Building2, count: properties.filter(p => p.type === "Apartment").length },
     { name: "House", icon: Home, count: properties.filter(p => p.type === "House").length },
     { name: "Villa", icon: Landmark, count: properties.filter(p => p.type === "Villa").length },
+    { name: "Penthouse", icon: Hotel, count: properties.filter(p => p.type === "Penthouse").length },
     { name: "Office", icon: Briefcase, count: properties.filter(p => p.type === "Office").length },
     { name: "Commercial", icon: Factory, count: properties.filter(p => p.type === "Commercial").length },
     { name: "Land", icon: Trees, count: properties.filter(p => p.type === "Land").length },
@@ -151,162 +155,143 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          {/* Minimal search strip */}
+          {/* Search bar — compact horizontal filter with an icon per field. */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45 }}
-            className="w-full max-w-5xl"
-            style={{
-              background: "rgba(255,255,255,0.07)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-            }}
+            className="w-full max-w-5xl rounded-2xl border border-[#F3D8A5]/25 bg-[#0B3A36]/80 p-2 shadow-[0_24px_70px_rgba(0,0,0,0.4)] backdrop-blur-xl"
           >
-            <div>
-              {/* Sale / Rent */}
-              <div className="flex border-b border-white/10">
-                {(["Sale", "Rent"] as const).map(tab => (
-                  <button
-                    key={tab}
-                    type="button"
-                    data-testid={`hero-tab-${tab.toLowerCase()}`}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 sm:flex-none px-6 py-4 text-[11px] font-medium uppercase tracking-[0.16em] transition-colors duration-150 ${
-                      activeTab === tab
-                        ? "bg-[#F3D8A5] text-[#0B3A36]"
-                        : "text-white/55 hover:text-white"
-                    }`}
-                  >
-                    {t(tab === "Sale" ? "home.tabSale" : "home.tabRent")}
-                  </button>
-                ))}
+            {/* Sale / Rent segmented toggle */}
+            <div className="mb-2 inline-flex rounded-lg bg-black/25 p-1">
+              {(["Sale", "Rent"] as const).map(tab => (
+                <button
+                  key={tab}
+                  type="button"
+                  data-testid={`hero-tab-${tab.toLowerCase()}`}
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-md px-7 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors duration-150 ${
+                    activeTab === tab
+                      ? "bg-[#F3D8A5] text-[#0B3A36] shadow-sm"
+                      : "text-white/55 hover:text-white"
+                  }`}
+                >
+                  {t(tab === "Sale" ? "home.tabSale" : "home.tabRent")}
+                </button>
+              ))}
+            </div>
+
+            {/* Filter row — icon + select per field, divided; stacks on mobile. */}
+            <div className="flex flex-col rounded-xl border border-white/10 bg-white/[0.03] lg:flex-row lg:items-stretch">
+              {/* Country */}
+              <div className="flex flex-1 items-center gap-2.5 border-b border-white/10 px-4 lg:border-b-0 lg:border-l lg:border-white/10 lg:first:border-l-0">
+                <Globe className="h-4 w-4 shrink-0 text-[#F3D8A5]/80" />
+                <Select
+                  value={selectedCountry}
+                  onValueChange={v => {
+                    setSelectedCountry(v);
+                    setSelectedCity("all");
+                    setSelectedArea("all");
+                  }}
+                >
+                  <SelectTrigger data-testid="hero-select-country" className={heroTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={heroContentClass}>
+                    <SelectItem value="all" className={heroItemClass}>{t("searchFilters.allCountries")}</SelectItem>
+                    {locations?.countries.map(c => (
+                      <SelectItem key={c.id} value={c.name} className={heroItemClass}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Filters - mirrors the pronat sidebar filters. Two per row on mobile,
-                  three on desktop, with location filters paired together. */}
-              <div className="grid grid-cols-2 lg:grid-cols-3">
-                {/* Country */}
-                <div className="relative border-b border-r border-white/10">
-                  <select
-                    value={selectedCountry}
-                    onChange={e => {
-                      setSelectedCountry(e.target.value);
-                      setSelectedCity("all");
-                      setSelectedArea("all");
-                      setSelectedCadastralZone("all");
-                    }}
-                    data-testid="hero-select-country"
-                    className={heroSelectClass}
-                  >
-                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allCountries")}</option>
-                    {locations?.countries.map(c => (
-                      <option key={c.id} value={c.name} className="bg-[#0B3A36]">{c.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-
-                {/* City */}
-                <div className="relative border-b lg:border-r border-white/10">
-                  <select
-                    value={selectedCity}
-                    onChange={e => {
-                      setSelectedCity(e.target.value);
-                      setSelectedArea("all");
-                      setSelectedCadastralZone("all");
-                    }}
-                    data-testid="hero-select-city"
-                    className={heroSelectClass}
-                  >
-                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allCities")}</option>
+              {/* City */}
+              <div className="flex flex-1 items-center gap-2.5 border-b border-white/10 px-4 lg:border-b-0 lg:border-l lg:border-white/10">
+                <Building2 className="h-4 w-4 shrink-0 text-[#F3D8A5]/80" />
+                <Select
+                  value={selectedCity}
+                  onValueChange={v => {
+                    setSelectedCity(v);
+                    setSelectedArea("all");
+                  }}
+                >
+                  <SelectTrigger data-testid="hero-select-city" className={heroTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={heroContentClass}>
+                    <SelectItem value="all" className={heroItemClass}>{t("searchFilters.allCities")}</SelectItem>
                     {cities.map(c => (
-                      <option key={c.id} value={c.name} className="bg-[#0B3A36]">{c.name}</option>
+                      <SelectItem key={c.id} value={c.name} className={heroItemClass}>{c.name}</SelectItem>
                     ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {/* Area / neighborhood */}
-                <div className="relative border-b border-r border-white/10">
-                  <select
-                    value={selectedArea}
-                    onChange={e => setSelectedArea(e.target.value)}
-                    data-testid="hero-select-area"
-                    className={heroSelectClass}
-                  >
-                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allAreas")}</option>
+              {/* Area / neighborhood */}
+              <div className="flex flex-1 items-center gap-2.5 border-b border-white/10 px-4 lg:border-b-0 lg:border-l lg:border-white/10">
+                <MapPin className="h-4 w-4 shrink-0 text-[#F3D8A5]/80" />
+                <Select value={selectedArea} onValueChange={setSelectedArea}>
+                  <SelectTrigger data-testid="hero-select-area" className={heroTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={heroContentClass}>
+                    <SelectItem value="all" className={heroItemClass}>{t("searchFilters.allAreas")}</SelectItem>
                     {areas.map(a => (
-                      <option key={a.id} value={a.name} className="bg-[#0B3A36]">{a.name}</option>
+                      <SelectItem key={a.id} value={a.name} className={heroItemClass}>{a.name}</SelectItem>
                     ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {/* Cadastral zone */}
-                <div className="relative border-b lg:border-r border-white/10">
-                  <select
-                    value={selectedCadastralZone}
-                    onChange={e => setSelectedCadastralZone(e.target.value)}
-                    data-testid="hero-select-cadastral"
-                    className={heroSelectClass}
-                  >
-                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allCadastralZones")}</option>
-                    {cadastralZones.map(z => (
-                      <option key={z.id} value={z.name} className="bg-[#0B3A36]">{z.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+              {/* Type */}
+              <div className="flex flex-1 items-center gap-2.5 border-b border-white/10 px-4 lg:border-b-0 lg:border-l lg:border-white/10">
+                <Home className="h-4 w-4 shrink-0 text-[#F3D8A5]/80" />
+                <Select value={selectedType} onValueChange={setSelectedType}>
+                  <SelectTrigger data-testid="hero-select-type" className={heroTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={heroContentClass}>
+                    <SelectItem value="all" className={heroItemClass}>{t("searchFilters.allTypes")}</SelectItem>
+                    <SelectItem value="Apartment" className={heroItemClass}>{tEnum("propertyType", "Apartment")}</SelectItem>
+                    <SelectItem value="House" className={heroItemClass}>{tEnum("propertyType", "House")}</SelectItem>
+                    <SelectItem value="Villa" className={heroItemClass}>{tEnum("propertyType", "Villa")}</SelectItem>
+                    <SelectItem value="Penthouse" className={heroItemClass}>{tEnum("propertyType", "Penthouse")}</SelectItem>
+                    <SelectItem value="Office" className={heroItemClass}>{tEnum("propertyType", "Office")}</SelectItem>
+                    <SelectItem value="Commercial" className={heroItemClass}>{tEnum("propertyType", "Commercial")}</SelectItem>
+                    <SelectItem value="Land" className={heroItemClass}>{tEnum("propertyType", "Land")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {/* Type */}
-                <div className="relative border-b border-r border-white/10">
-                  <select
-                    value={selectedType}
-                    onChange={e => setSelectedType(e.target.value)}
-                    data-testid="hero-select-type"
-                    className={heroSelectClass}
-                  >
-                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allTypes")}</option>
-                    <option value="Apartment" className="bg-[#0B3A36]">{tEnum("propertyType", "Apartment")}</option>
-                    <option value="House" className="bg-[#0B3A36]">{tEnum("propertyType", "House")}</option>
-                    <option value="Villa" className="bg-[#0B3A36]">{tEnum("propertyType", "Villa")}</option>
-                    <option value="Office" className="bg-[#0B3A36]">{tEnum("propertyType", "Office")}</option>
-                    <option value="Commercial" className="bg-[#0B3A36]">{tEnum("propertyType", "Commercial")}</option>
-                    <option value="Land" className="bg-[#0B3A36]">{tEnum("propertyType", "Land")}</option>
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-
-                {/* Bedrooms */}
-                <div className="relative border-b border-white/10">
-                  <select
-                    value={selectedBedrooms}
-                    onChange={e => setSelectedBedrooms(e.target.value)}
-                    data-testid="hero-select-bedrooms"
-                    className={heroSelectClass}
-                  >
-                    <option value="any" className="bg-[#0B3A36]">{t("searchFilters.bedrooms")}</option>
-                    <option value="1" className="bg-[#0B3A36]">1+</option>
-                    <option value="2" className="bg-[#0B3A36]">2+</option>
-                    <option value="3" className="bg-[#0B3A36]">3+</option>
-                    <option value="4" className="bg-[#0B3A36]">4+</option>
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+              {/* Bedrooms */}
+              <div className="flex flex-1 items-center gap-2.5 border-b border-white/10 px-4 lg:border-b-0 lg:border-l lg:border-white/10">
+                <BedDouble className="h-4 w-4 shrink-0 text-[#F3D8A5]/80" />
+                <Select value={selectedBedrooms} onValueChange={setSelectedBedrooms}>
+                  <SelectTrigger data-testid="hero-select-bedrooms" className={heroTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={heroContentClass}>
+                    <SelectItem value="any" className={heroItemClass}>{t("searchFilters.bedrooms")}</SelectItem>
+                    <SelectItem value="1" className={heroItemClass}>1+</SelectItem>
+                    <SelectItem value="2" className={heroItemClass}>2+</SelectItem>
+                    <SelectItem value="3" className={heroItemClass}>3+</SelectItem>
+                    <SelectItem value="4" className={heroItemClass}>4+</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Search button */}
-              <button
-                onClick={runHeroSearch}
-                data-testid="hero-search-button"
-                className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-[#F3D8A5] text-[#0B3A36] font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-[#EBCB8F] transition-colors duration-200"
-              >
-                <Search className="w-4 h-4" />
-                <span>{t("common.search")}</span>
-              </button>
+              <div className="p-1.5 lg:flex lg:items-center">
+                <button
+                  onClick={runHeroSearch}
+                  data-testid="hero-search-button"
+                  className="flex h-full w-full items-center justify-center gap-2 rounded-lg bg-[#F3D8A5] px-7 py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0B3A36] transition-colors duration-200 hover:bg-[#EBCB8F] lg:py-0"
+                >
+                  <Search className="h-4 w-4" />
+                  <span>{t("common.search")}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -324,7 +309,7 @@ export default function HomePage() {
       {/* Categories */}
       <section className="py-16 bg-white border-b border-gray-100">
         <div className="container mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {categories.map((cat, idx) => (
               <Link key={idx} href={`/properties?type=${cat.name.toLowerCase()}`} className="flex flex-col items-center justify-center p-6 border border-gray-100 rounded-lg hover:border-[#0B3A36] hover:bg-gray-50 transition-colors group">
                 <cat.icon className="w-8 h-8 text-[#0B3A36] mb-4 group-hover:scale-110 transition-transform" strokeWidth={1.5} />

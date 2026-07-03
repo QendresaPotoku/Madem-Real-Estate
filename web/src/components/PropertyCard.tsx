@@ -4,7 +4,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { Link } from "wouter";
 import { PropertyBadge } from "./PropertyBadge";
 import { PropertyQuickView } from "./PropertyQuickView";
-import { Bed, Bath, Square, MapPin, Heart, Eye } from "lucide-react";
+import { Bed, Bath, Square, MapPin, Heart, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { useT } from "@/i18n/useT";
 
 interface PropertyCardProps {
@@ -17,6 +17,16 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [inViewPlaying, setInViewPlaying] = useState(false);
   const favorite = isFavorite(property.id);
+  // Inline image browsing: flip through photos on the card before opening it.
+  const images = property.images ?? [];
+  const [current, setCurrent] = useState(0);
+  const hasMultiple = images.length > 1;
+  const index = Math.min(current, Math.max(0, images.length - 1));
+  const goImage = (e: React.MouseEvent, dir: -1 | 1) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrent((prev) => (prev + dir + images.length) % images.length);
+  };
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -60,20 +70,31 @@ export function PropertyCard({ property }: PropertyCardProps) {
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <Link href={`/properties/${property.id}`} className="block w-full h-full">
-          <img
-            src={property.images[0]}
-            alt={tx(property.title)}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
+          {/* Sliding track — all images in a row, translated so the active one is
+              in view; changing index animates the slide smoothly. */}
+          <div
+            className="flex h-full w-full transition-transform duration-[900ms] ease-in-out"
+            style={{ transform: `translateX(-${index * 100}%)` }}
+          >
+            {(images.length ? images : [property.images[0]]).map((src, i) => (
+              <div key={i} className="h-full w-full shrink-0 overflow-hidden">
+                <img
+                  src={src}
+                  alt={tx(property.title)}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading={i === 0 ? "eager" : "lazy"}
+                />
+              </div>
+            ))}
+          </div>
           {property.videoUrl && (
             <video
               ref={videoRef}
               src={property.videoUrl}
               poster={property.images[0]}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-100 pointer-events-none ${
-                inViewPlaying ? "opacity-100" : "opacity-0"
-              }`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 pointer-events-none ${
+                index === 0 ? "group-hover:opacity-100" : ""
+              } ${inViewPlaying && index === 0 ? "opacity-100" : "opacity-0"}`}
               muted
               loop
               playsInline
@@ -117,6 +138,32 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </button>
           </div>
         </div>
+
+        {/* Inline image navigation — arrows (hover on desktop, always on touch)
+            and a photo counter. Siblings of the Link so they don't navigate. */}
+        {hasMultiple && (
+          <>
+            <button
+              type="button"
+              onClick={(e) => goImage(e, -1)}
+              aria-label={t("common.previous")}
+              className="absolute left-3 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/80 text-[#0B3A36] opacity-0 backdrop-blur-sm transition-opacity hover:bg-white group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => goImage(e, 1)}
+              aria-label={t("common.next")}
+              className="absolute right-3 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-white/80 text-[#0B3A36] opacity-0 backdrop-blur-sm transition-opacity hover:bg-white group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            <div className="absolute bottom-3 right-3 z-10 rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+              {index + 1}/{images.length}
+            </div>
+          </>
+        )}
       </div>
 
       <PropertyQuickView property={property} open={quickViewOpen} onOpenChange={setQuickViewOpen} />

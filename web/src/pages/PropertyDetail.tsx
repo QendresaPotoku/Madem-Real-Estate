@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams } from "wouter";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useProperty, useAgents, useProperties } from "@/hooks/useApi";
@@ -7,13 +7,11 @@ import { PropertyBadge } from "@/components/PropertyBadge";
 import { ContactForm } from "@/components/ContactForm";
 import { AgentCard } from "@/components/AgentCard";
 import { PropertyGrid } from "@/components/PropertyGrid";
-import { useFavorites } from "@/hooks/useFavorites";
 import {
-  Bed, Bath, Square, MapPin, Heart, Share2, Check, Building2,
+  Bed, Bath, Square, MapPin, Check, Building2,
   Hash, Tag, Ruler, LandPlot, Layers, Sparkles, Calendar, Flame, Compass, Clock,
   type LucideIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import NotFound from "./not-found";
 import { useT } from "@/i18n/useT";
@@ -26,8 +24,7 @@ export default function PropertyDetail() {
   const { data: property, isLoading } = useProperty(id);
   const { data: agents = [] } = useAgents();
   const { data: allProperties = [] } = useProperties();
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const [copied, setCopied] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
 
   if (isLoading) {
     return (
@@ -42,14 +39,10 @@ export default function PropertyDetail() {
   }
 
   const agent = agents.find(a => a.id === property.agentId) ?? null;
-  const favorite = isFavorite(property.id);
   const similarProperties = allProperties.filter(p => p.type === property.type && p.id !== property.id).slice(0, 3);
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const descriptionText = tx(property.description);
+  // Only offer a Read More toggle when the text is long enough to be clamped.
+  const descriptionIsLong = descriptionText.length > 180;
 
   // Property Details - only rendered when a value is present.
   const detailRows: { label: string; value: string; icon: LucideIcon }[] = [
@@ -127,59 +120,37 @@ export default function PropertyDetail() {
       />
       <Header />
 
-      {/* Top Banner */}
-      <div className="bg-white border-b border-gray-100 py-4">
-        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <Link href="/properties" className="text-xs font-semibold tracking-widest uppercase text-gray-400 hover:text-[#0B3A36] transition-colors">
-              ← {t("propertyDetail.backToProperties")}
-            </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              className={`border-gray-200 ${favorite ? 'text-red-500 hover:text-red-600' : 'text-gray-600 hover:text-[#0B3A36]'}`}
-              onClick={() => toggleFavorite(property.id)}
-            >
-              <Heart className={`w-4 h-4 mr-2 ${favorite ? 'fill-current' : ''}`} />
-              {favorite ? t("propertyDetail.saved") : t("propertyDetail.save")}
-            </Button>
-            <Button variant="outline" className="border-gray-200 text-gray-600 hover:text-[#0B3A36]" onClick={copyLink}>
-              {copied ? <Check className="w-4 h-4 mr-2" /> : <Share2 className="w-4 h-4 mr-2" />}
-              {t("propertyDetail.share")}
-            </Button>
-          </div>
-        </div>
-      </div>
-
       <div className="container mx-auto py-8">
-        {/* Header Info: Title · Price · Location */}
-        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <PropertyBadge status={property.status} />
-              <span className="px-3 py-1 text-xs font-medium tracking-widest uppercase rounded-sm bg-gray-100 text-gray-600">
-                {tEnum("propertyType", property.type)}
-              </span>
-            </div>
-            <h1 className="font-serif text-3xl md:text-5xl font-bold text-[#0B3A36] mb-3">{tx(property.title)}</h1>
-            <div className="flex items-center text-gray-500 font-medium">
-              <MapPin className="w-5 h-5 mr-1 text-[#F3D8A5]" />
-              {property.neighborhood}, {property.city}
-            </div>
+        {/* Header Info: Title · Ref · Location (price moved below the gallery) */}
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2 mb-4">
+            <PropertyBadge status={property.status} />
+            <span className="px-3 py-1 text-xs font-medium tracking-widest uppercase rounded-sm bg-gray-100 text-gray-600">
+              {tEnum("propertyType", property.type)}
+            </span>
           </div>
-          <div className="text-left md:text-right">
-            <p className="text-sm text-gray-500 font-medium uppercase tracking-wider mb-1">{t("propertyDetail.askingPrice")}</p>
-            <p className="font-serif text-4xl text-[#0B3A36] font-bold">
-              €{property.price.toLocaleString()}
-              {property.status === "For Rent" && <span className="text-xl font-sans font-normal text-gray-500"> {t("common.perMonth")}</span>}
-            </p>
+          <h1 className="font-serif text-2xl md:text-3xl font-bold text-[#0B3A36] mb-2">{tx(property.title)}</h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-500 font-medium">
+            <span className="inline-flex items-center">
+              <MapPin className="w-4 h-4 mr-1 text-[#F3D8A5]" />
+              {property.neighborhood}, {property.city}
+            </span>
+            <span className="text-sm text-gray-400">{t("propertyDetail.refLabel", { ref: property.referenceNumber })}</span>
           </div>
         </div>
 
         {/* Gallery — videos first, then photos */}
-        <div className="mb-12">
+        <div className="mb-6">
           <PropertyMediaGallery images={property.images} videos={property.videos ?? []} />
+        </div>
+
+        {/* Price — placed below the gallery, not above the photos */}
+        <div className="mb-12 border-b border-gray-100 pb-6">
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">{t("propertyDetail.askingPrice")}</p>
+          <p className="font-serif text-3xl md:text-4xl text-[#0B3A36] font-bold">
+            €{property.price.toLocaleString()}
+            {property.status === "For Rent" && <span className="text-xl font-sans font-normal text-gray-500"> {t("common.perMonth")}</span>}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -216,12 +187,21 @@ export default function PropertyDetail() {
               )}
             </div>
 
-            {/* Description */}
+            {/* Description — collapsed to 2 lines by default with a Read More toggle. */}
             <div>
               <h3 className="font-serif text-2xl font-bold text-[#0B3A36] mb-6">{t("propertyDetail.aboutTitle")}</h3>
               <div className="prose max-w-none text-gray-600 leading-relaxed text-lg">
-                <p>{tx(property.description)}</p>
+                <p className={descriptionIsLong && !descExpanded ? "line-clamp-2" : ""}>{descriptionText}</p>
               </div>
+              {descriptionIsLong && (
+                <button
+                  type="button"
+                  onClick={() => setDescExpanded((v) => !v)}
+                  className="mt-3 text-sm font-semibold uppercase tracking-wider text-[#0B3A36] hover:text-[#F3D8A5] transition-colors"
+                >
+                  {descExpanded ? t("common.readLess") : t("common.readMore")}
+                </button>
+              )}
             </div>
 
             {/* Property Details */}

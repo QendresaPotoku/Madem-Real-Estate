@@ -13,6 +13,7 @@ import { AddContactIdNumber1710000008000 } from './migrations/1710000008000-AddC
 import { AddDealRentExpiry1710000009000 } from './migrations/1710000009000-AddDealRentExpiry';
 import { AddPropertyVideos1710000010000 } from './migrations/1710000010000-AddPropertyVideos';
 import { RemoveContactType1710000011000 } from './migrations/1710000011000-RemoveContactType';
+import { AddPenthousePropertyType1710000012000 } from './migrations/1710000012000-AddPenthousePropertyType';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -29,6 +30,7 @@ export const AppDataSource = new DataSource({
     AddDealRentExpiry1710000009000,
     AddPropertyVideos1710000010000,
     RemoveContactType1710000011000,
+    AddPenthousePropertyType1710000012000,
   ],
   namingStrategy: new SnakeNamingStrategy(),
   synchronize: false,

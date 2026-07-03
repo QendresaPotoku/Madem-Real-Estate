@@ -14,7 +14,7 @@ import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useT } from "@/i18n/useT";
 import { Seo } from "@/components/Seo";
 
-const CANONICAL_TYPES = ["Apartment", "House", "Villa", "Office", "Commercial", "Land", "Warehouse"];
+const CANONICAL_TYPES = ["Apartment", "House", "Villa", "Penthouse", "Office", "Commercial", "Land", "Warehouse"];
 
 /** Build filters from URL query params (e.g. set by the home hero search). Returns null when there are none. */
 function parseFiltersFromSearch(search: string): PropertyFilters | null {
@@ -27,7 +27,6 @@ function parseFiltersFromSearch(search: string): PropertyFilters | null {
     country: params.get("country") ?? "all",
     city: params.get("city") ?? "all",
     area: params.get("area") ?? "all",
-    cadastralZone: params.get("cadastralZone") ?? "all",
     type,
     bedrooms: params.get("bedrooms") ?? "any",
   };
@@ -68,7 +67,6 @@ export default function PropertiesPage() {
       if (filters.country !== "all" && p.country !== filters.country) return false;
       if (filters.city !== "all" && p.city !== filters.city) return false;
       if (filters.area !== "all" && p.neighborhood !== filters.area) return false;
-      if (filters.cadastralZone !== "all" && p.cadastralZone !== filters.cadastralZone) return false;
       if (filters.type !== "all" && p.type !== filters.type) return false;
       if (filters.bedrooms !== "any" && (p.bedrooms ?? 0) < Number(filters.bedrooms)) return false;
       return true;
