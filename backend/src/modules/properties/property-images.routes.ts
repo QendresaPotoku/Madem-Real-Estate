@@ -30,7 +30,7 @@ const reorderBody = z.object({
   order: z.array(z.object({ id: z.string().uuid(), sortOrder: z.number().int().min(0) })).min(1),
 });
 
-/** Mounted at /api/properties — image gallery management for a property. */
+/** Mounted at /api/properties - image gallery management for a property. */
 export async function propertyImageRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
   r.addHook('preHandler', app.authGuard);

@@ -8,12 +8,11 @@ export type ContactOption = {
   id: string;
   fullName: string;
   phone?: string | null;
-  contactType?: string | null;
 };
 
-/** Small searchable dropdown for picking a contact. Shows the phone (and type) in a
- *  smaller font next to the name so same-named people can be told apart, and filters
- *  by name OR phone as you type — something a native <select> can't do. */
+/** Small searchable dropdown for picking a contact. Shows the phone in a smaller font
+ *  next to the name so same-named people can be told apart, and filters by name OR
+ *  phone as you type - something a native <select> can't do. */
 export function ContactSelect({
   value,
   onChange,
@@ -51,7 +50,7 @@ export function ContactSelect({
     setQuery('');
   };
 
-  const subtitle = (o: ContactOption) => [o.phone, o.contactType].filter(Boolean).join(' · ');
+  const subtitle = (o: ContactOption) => o.phone ?? '';
 
   return (
     <div ref={ref} className="relative">
@@ -87,7 +86,7 @@ export function ContactSelect({
           <ul className="max-h-56 overflow-y-auto pb-1 text-sm">
             <li>
               <button type="button" onClick={() => choose('')} className="w-full px-3 py-2 text-left text-gray-400 hover:bg-gray-50">
-                —
+                -
               </button>
             </li>
             {filtered.map((o) => (

@@ -1,12 +1,12 @@
 export type Language = "en" | "sq" | "de";
 
 export const LANGUAGES: { code: Language; label: string }[] = [
-  { code: "en", label: "EN" },
   { code: "sq", label: "SQ" },
+  { code: "en", label: "EN" },
   { code: "de", label: "DE" },
 ];
 
-export const DEFAULT_LANGUAGE: Language = "en";
+export const DEFAULT_LANGUAGE: Language = "sq";
 
 /**
  * A piece of content that exists in all three supported languages.

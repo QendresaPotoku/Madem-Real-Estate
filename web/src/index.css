@@ -5,14 +5,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Center page content with comfortable side gutters on wide screens. */
+/* Center page content with comfortable side gutters. Uses max(..) with the safe
+ * area insets so text never hugs the edge on narrow or notched phones. */
 @utility container {
   width: 100%;
   margin-inline: auto;
   max-width: 80rem; /* 1280px */
-  padding-inline: 1.5rem;
+  padding-inline: max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
   @media (width >= 1024px) {
-    padding-inline: 2.5rem;
+    padding-inline: max(2.5rem, env(safe-area-inset-left)) max(2.5rem, env(safe-area-inset-right));
   }
 }
 

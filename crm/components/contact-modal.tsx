@@ -3,14 +3,12 @@
 import { useState } from 'react';
 import { Button, Field, Input, Modal, Select, Textarea } from '@/components/ui';
 
-const CONTACT_TYPES = ['OWNER', 'BUYER', 'TENANT', 'LANDLORD', 'INVESTOR'] as const;
 const SOURCES = ['WEBSITE', 'REFERRAL', 'WALK_IN', 'PHONE', 'SOCIAL', 'OTHER'] as const;
 
 export type ContactModalRow = {
   id: string;
   code: string;
   fullName: string;
-  contactType: string;
   source: string;
   phone: string | null;
   email: string | null;
@@ -20,7 +18,6 @@ export type ContactModalRow = {
 
 export type ContactModalBody = {
   fullName: string;
-  contactType: string;
   source: string;
   phone?: string;
   email?: string;
@@ -41,7 +38,6 @@ export function ContactModal({
 }) {
   const [f, setF] = useState({
     fullName: row?.fullName ?? '',
-    contactType: row?.contactType ?? 'OWNER',
     source: row?.source ?? 'WALK_IN',
     phone: row?.phone ?? '',
     email: row?.email ?? '',
@@ -57,7 +53,6 @@ export function ContactModal({
           e.preventDefault();
           onSubmit({
             fullName: f.fullName,
-            contactType: f.contactType,
             source: f.source,
             phone: f.phone || undefined,
             email: f.email || undefined,
@@ -73,15 +68,6 @@ export function ContactModal({
         <Field label="ID number">
           <Input value={f.idNumber} onChange={(e) => set('idNumber', e.target.value)} />
         </Field>
-        {/* Type field hidden for now — contactType defaults to OWNER (see useState above).
-        <Field label="Type">
-          <Select value={f.contactType} onChange={(e) => set('contactType', e.target.value)}>
-            {CONTACT_TYPES.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </Select>
-        </Field>
-        */}
         <Field label="Source">
           <Select value={f.source} onChange={(e) => set('source', e.target.value)}>
             {SOURCES.map((s) => (
@@ -89,7 +75,7 @@ export function ContactModal({
             ))}
           </Select>
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Phone">
             <Input value={f.phone} onChange={(e) => set('phone', e.target.value)} />
           </Field>

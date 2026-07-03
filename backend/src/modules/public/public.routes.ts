@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { In, type EntityManager } from 'typeorm';
 import { z } from 'zod';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { Activity, Contact, LocationArea, LocationCadastralZone, LocationCity, LocationCountry, Opportunity, Property, PropertyImage, User } from '../../entities';
+import { Activity, Contact, LocationArea, LocationCadastralZone, LocationCity, LocationCountry, Opportunity, Property, PropertyImage, PropertyVideo, User } from '../../entities';
 import { AppError } from '../../lib/errors';
 import { paginate } from '../../lib/pagination';
 import { createUploadUrl, isStorageConfigured } from '../../lib/s3';
@@ -11,15 +11,11 @@ import { notify } from '../../lib/notifications';
 import { listResponse, localizedSchema, paginationQuerySchema } from '../../schemas/common';
 import {
   BUILDING_CONDITIONS,
-  CONTACT_TYPES,
   LISTING_TYPES,
   ORIENTATIONS,
   PROPERTY_TYPES,
   type PropertyType,
 } from '../../schemas/enums';
-
-/** Lead contact types the public site is allowed to set. */
-const PUBLIC_CONTACT_TYPES = ['BUYER', 'TENANT', 'OWNER', 'LANDLORD'] as const satisfies readonly (typeof CONTACT_TYPES)[number][];
 
 const publicProperty = z.object({
   id: z.string().uuid(),
@@ -58,6 +54,7 @@ const publicProperty = z.object({
   agentUserId: z.string().uuid(),
   attributesJson: z.record(z.unknown()),
   coverImageUrl: z.string().nullable(),
+  coverVideoUrl: z.string().nullable(),
   publishedDate: z.string().nullable(),
   createdAt: z.date(),
 });
@@ -66,6 +63,12 @@ const publicImage = z.object({
   id: z.string().uuid(),
   imageUrl: z.string(),
   isCover: z.boolean(),
+  sortOrder: z.number(),
+});
+
+const publicVideo = z.object({
+  id: z.string().uuid(),
+  videoUrl: z.string(),
   sortOrder: z.number(),
 });
 
@@ -105,7 +108,6 @@ const leadBody = z.object({
   phone: z.string().optional(),
   email: z.string().email().optional(),
   message: z.string().optional(),
-  contactType: z.enum(PUBLIC_CONTACT_TYPES).optional(),
   propertyId: z.string().uuid().optional(),
   propertyCode: z.string().optional(),
   listingType: z.enum(LISTING_TYPES).optional(),
@@ -117,9 +119,6 @@ const leadBody = z.object({
   message: 'budgetMax must be >= budgetMin',
   path: ['budgetMax'],
 });
-
-/** Owners/landlords offer property; they are not buyer demand, so no opportunity is created for them. */
-const SELLER_CONTACT_TYPES = new Set(['OWNER', 'LANDLORD']);
 
 /* ── Owner property-offer intake (creates a DRAFT listing for agent review) ── */
 
@@ -214,25 +213,35 @@ export async function publicRoutes(app: FastifyInstance) {
       if (q.search) qb.andWhere(`p.search_tsv @@ plainto_tsquery('simple', :search)`, { search: q.search });
       const result = await paginate(qb, req.query, { createdAt: 'p.created_at', price: 'p.price' }, 'p.created_at');
 
-      // Batch-load cover images for the page (one query) and attach.
+      // Batch-load cover images + first video for the page (two queries) and attach.
       const ids = result.data.map((p) => p.id);
       const covers = ids.length
         ? await app.repo(PropertyImage).find({ where: { propertyId: In(ids), isCover: true } })
         : [];
       const coverByProp = new Map(covers.map((c) => [c.propertyId, c.imageUrl]));
+      const videos = ids.length
+        ? await app.repo(PropertyVideo).find({ where: { propertyId: In(ids) }, order: { sortOrder: 'ASC' } })
+        : [];
+      const videoByProp = new Map<string, string>();
+      for (const v of videos) if (!videoByProp.has(v.propertyId)) videoByProp.set(v.propertyId, v.videoUrl);
       return {
         ...result,
-        data: result.data.map((p) => ({ ...p, coverImageUrl: coverByProp.get(p.id) ?? null })),
+        data: result.data.map((p) => ({
+          ...p,
+          coverImageUrl: coverByProp.get(p.id) ?? null,
+          coverVideoUrl: videoByProp.get(p.id) ?? null,
+        })),
       };
     });
 
-  r.get('/properties/:code', { schema: { tags: ['public'], summary: 'Get a published property by code, with images', params: z.object({ code: z.string() }), response: { 200: publicProperty.extend({ images: z.array(publicImage) }), 404: z.object({ code: z.string(), message: z.string() }) } } },
+  r.get('/properties/:code', { schema: { tags: ['public'], summary: 'Get a published property by code, with images and videos', params: z.object({ code: z.string() }), response: { 200: publicProperty.extend({ images: z.array(publicImage), videos: z.array(publicVideo) }), 404: z.object({ code: z.string(), message: z.string() }) } } },
     async (req) => {
       const property = await app.repo(Property).findOneBy({ propertyCode: req.params.code, status: 'ACTIVE' });
       if (!property) throw AppError.notFound('Property');
       const images = await app.repo(PropertyImage).find({ where: { propertyId: property.id }, order: { sortOrder: 'ASC' } });
+      const videos = await app.repo(PropertyVideo).find({ where: { propertyId: property.id }, order: { sortOrder: 'ASC' } });
       const cover = images.find((i) => i.isCover) ?? images[0];
-      return { ...property, images, coverImageUrl: cover?.imageUrl ?? null };
+      return { ...property, images, videos, coverImageUrl: cover?.imageUrl ?? null, coverVideoUrl: videos[0]?.videoUrl ?? null };
     });
 
   r.get('/agents', { schema: { tags: ['public'], summary: 'List active agents', response: { 200: z.array(publicAgent) } } },
@@ -248,20 +257,20 @@ export async function publicRoutes(app: FastifyInstance) {
     },
   }, async (req, reply) => {
     const result = await app.db.transaction(async (manager) => {
-      const contactType = req.body.contactType ?? 'BUYER';
       const contact = await manager.getRepository(Contact).save(
         manager.getRepository(Contact).create({
           fullName: req.body.fullName,
           phone: req.body.phone ?? null,
           email: req.body.email ?? null,
-          contactType,
           source: 'WEBSITE',
           notes: req.body.message ?? null,
         }),
       );
 
+      // A lead becomes a buyer/tenant opportunity only when it states what they're
+      // looking for. Owners offering property use the /property-offers endpoint instead.
       let opportunityId: string | null = null;
-      if (!SELLER_CONTACT_TYPES.has(contactType) && req.body.listingType && req.body.propertyType) {
+      if (req.body.listingType && req.body.propertyType) {
         const opp = await manager.getRepository(Opportunity).save(
           manager.getRepository(Opportunity).create({
             contactId: contact.id,
@@ -331,7 +340,7 @@ export async function publicRoutes(app: FastifyInstance) {
     config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
     schema: {
       tags: ['public'],
-      summary: 'Owner submits a property to the agency — creates an OWNER contact + a DRAFT listing for review',
+      summary: 'Owner submits a property to the agency - creates a contact + a DRAFT listing for review',
       body: propertyOfferBody,
       response: {
         201: z.object({ contactId: z.string().uuid(), propertyId: z.string().uuid() }),
@@ -355,7 +364,6 @@ export async function publicRoutes(app: FastifyInstance) {
           fullName: req.body.fullName,
           phone: req.body.phone ?? null,
           email: req.body.email ?? null,
-          contactType: 'OWNER',
           source: 'WEBSITE',
           notes: req.body.description ?? null,
         }),
@@ -398,7 +406,7 @@ export async function publicRoutes(app: FastifyInstance) {
           type: 'NOTE',
           contactId: contact.id,
           propertyId: property.id,
-          note: 'Website property offer (owner intake) — review & publish.',
+          note: 'Website property offer (owner intake) - review & publish.',
         }),
       );
 

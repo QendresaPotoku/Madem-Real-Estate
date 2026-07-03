@@ -3,7 +3,7 @@ import type { paths } from './api-types';
 
 /**
  * Typed API client. baseUrl is '' so requests go to the same origin (/api/...),
- * which Next rewrites proxy to the Fastify backend — keeping the session cookie
+ * which Next rewrites proxy to the Fastify backend - keeping the session cookie
  * first-party. `credentials: 'include'` sends the httpOnly cookie.
  */
 export const api = createClient<paths>({

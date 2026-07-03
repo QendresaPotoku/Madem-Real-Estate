@@ -36,7 +36,7 @@ const statusBody = z.object({
   notes: z.string().optional(),
 });
 
-/** Mounted at /api/properties — legal/internal document management for a property. */
+/** Mounted at /api/properties - legal/internal document management for a property. */
 export async function propertyDocumentRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
   r.addHook('preHandler', app.authGuard);

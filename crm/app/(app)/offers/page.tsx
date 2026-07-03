@@ -88,7 +88,7 @@ export default function OffersPage() {
   const resetFilters = () => setFilters({ status: '', propertyId: '', buyerContactId: '' });
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Offers"
         subtitle={`${filtered.length} shown of ${data?.meta.total ?? 0} offers`}
@@ -99,7 +99,7 @@ export default function OffersPage() {
         }
       />
 
-      <div className="mb-4 grid grid-cols-4 gap-3">
+      <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric label="Active offers" value={summary.active.toLocaleString()} />
         <Metric label="Accepted" value={summary.accepted.toLocaleString()} icon={<CheckCircle2 className="h-4 w-4" />} />
         <Metric label="Accepted value" value={`${summary.totalAccepted.toLocaleString()} EUR`} />
@@ -295,13 +295,13 @@ function OfferModal({ row, onClose, onSubmit, pending }: { row?: OfferRow; onClo
           </Field>
         )}
         {!row && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Buyer">
               <Select value={f.buyerContactId} onChange={(e) => set('buyerContactId', e.target.value)} required>
                 <option value="">Select buyer...</option>
                 {buyers.data?.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.fullName} ({c.contactType})
+                    {c.fullName}
                   </option>
                 ))}
               </Select>
@@ -318,7 +318,7 @@ function OfferModal({ row, onClose, onSubmit, pending }: { row?: OfferRow; onClo
             </Field>
           </div>
         )}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Offered amount">
             <Input type="number" min="0" value={f.offeredAmount} onChange={(e) => set('offeredAmount', e.target.value)} required />
           </Field>

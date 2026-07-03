@@ -4,8 +4,8 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { Match } from '../../entities';
 import { AppError } from '../../lib/errors';
 import { errorResponseSchema, localizedSchema, uuidParamSchema } from '../../schemas/common';
-import { MATCH_STATUSES } from '../../schemas/enums';
-import { recomputeMatches } from './matching.service';
+import { LISTING_TYPES, MATCH_STATUSES, OPPORTUNITY_STATUSES, PROPERTY_TYPES } from '../../schemas/enums';
+import { recomputeMatches, recomputeMatchesForProperty } from './matching.service';
 
 const propertySummary = z.object({
   id: z.string().uuid(),
@@ -28,7 +28,32 @@ const matchResponse = z.object({
   updatedAt: z.date(),
 });
 
-/** Mounted at /api — exposes /opportunities/:id/matches and /matches/:id. */
+const opportunitySummary = z.object({
+  id: z.string().uuid(),
+  code: z.string(),
+  status: z.enum(OPPORTUNITY_STATUSES),
+  listingType: z.enum(LISTING_TYPES),
+  propertyType: z.enum(PROPERTY_TYPES),
+  city: z.string().nullable(),
+  area: z.string().nullable(),
+  budgetMin: z.number().nullable(),
+  budgetMax: z.number().nullable(),
+  contactName: z.string().nullable(),
+  assignedAgentId: z.string().uuid().nullable(),
+});
+
+const propertyMatchResponse = z.object({
+  id: z.string().uuid(),
+  opportunityId: z.string().uuid(),
+  propertyId: z.string().uuid(),
+  status: z.enum(MATCH_STATUSES),
+  matchScore: z.number().nullable(),
+  opportunity: opportunitySummary.optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+/** Mounted at /api - exposes /opportunities/:id/matches and /matches/:id. */
 export async function matchRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
   r.addHook('preHandler', app.authGuard);
@@ -46,6 +71,24 @@ export async function matchRoutes(app: FastifyInstance) {
     async (req) => {
       const matches = await recomputeMatches(app.db, req.params.id);
       if (matches === null) throw AppError.notFound('Opportunity');
+      return matches;
+    },
+  );
+
+  r.get(
+    '/properties/:id/matches',
+    {
+      schema: {
+        tags: ['matches'],
+        summary: 'Recompute and return open opportunities that match a property',
+        params: uuidParamSchema,
+        response: { 200: z.array(propertyMatchResponse), 404: errorResponseSchema },
+      },
+    },
+    async (req) => {
+      // Refresh silently (no notifications) so the property page always reflects current matches.
+      const matches = await recomputeMatchesForProperty(app.db, req.params.id, { notify: false });
+      if (matches === null) throw AppError.notFound('Property');
       return matches;
     },
   );

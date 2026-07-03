@@ -30,6 +30,7 @@ type DealRow = {
   commissionPaid: boolean;
   currency: string;
   status: string;
+  contractExpiryDate: string | null;
 };
 
 export default function DealsPage() {
@@ -51,7 +52,7 @@ function DealsInner() {
   const props = useProperties();
   const agents = useAgents();
   const propLabel = (id: string) => props.data?.find((x) => x.id === id)?.propertyCode ?? id.slice(0, 8);
-  const agentName = (id: string) => agents.data?.find((a) => a.id === id)?.fullName ?? '—';
+  const agentName = (id: string) => agents.data?.find((a) => a.id === id)?.fullName ?? '-';
 
   const highlightedDealId = sp.get('dealId');
   const status = sp.get('status') ?? '';
@@ -162,7 +163,7 @@ function DealsInner() {
   const totalPages = data?.meta.totalPages ?? 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Deals"
         subtitle={`${data?.meta.total ?? 0} transactions`}
@@ -174,7 +175,7 @@ function DealsInner() {
       />
       <p className="-mt-4 mb-4 text-xs text-gray-400">Marking a deal CLOSED_WON moves its property to SOLD / RENTED.</p>
 
-      <div className="mb-4 grid grid-cols-4 gap-3">
+      <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric label="Open deals" value={summary.open.toLocaleString()} />
         <Metric label="Closed won" value={summary.won.toLocaleString()} />
         <Metric label="Total commission" value={`${summary.totalCommission.toLocaleString()} EUR`} />
@@ -243,7 +244,7 @@ function DealsInner() {
             <td className="px-4 py-3 text-gray-600">{agentName(d.agentUserId)}</td>
             <td className="px-4 py-3 text-gray-600">{d.dealType}</td>
             <td className="px-4 py-3 text-right font-medium text-brand">
-              {d.finalPrice ? `${d.finalPrice.toLocaleString()} ${d.currency}` : '—'}
+              {d.finalPrice ? `${d.finalPrice.toLocaleString()} ${d.currency}` : '-'}
             </td>
             <td className="px-4 py-3 text-right">
               <CommissionValueInput
@@ -400,23 +401,26 @@ function DealModal({ row, onClose, onSubmit, pending }: { row?: DealRow; onClose
   const props = useProperties();
   const contacts = useContacts();
   const agents = useAgents();
-  // Buyer side = buyer/tenant; seller side = owner/landlord. Disjoint by type,
-  // so the same contact can never be picked for both sides.
-  const buyers = (contacts.data ?? []).filter((c) => c.contactType === 'BUYER' || c.contactType === 'TENANT');
-  const sellers = (contacts.data ?? []).filter((c) => c.contactType === 'OWNER' || c.contactType === 'LANDLORD');
+  // Buyer side picks from the full contact list. The seller is the selected property's owner (read-only).
+  const buyers = contacts.data ?? [];
   const isEdit = !!row;
   const [f, setF] = useState({
     propertyId: row?.propertyId ?? '',
     opportunityId: row?.opportunityId ?? '',
     buyerContactId: row?.buyerContactId ?? '',
-    sellerContactId: row?.sellerContactId ?? '',
     agentUserId: row?.agentUserId ?? '',
     dealType: row?.dealType ?? 'SALE',
     finalPrice: row?.finalPrice != null ? String(row.finalPrice) : '',
     mademCommissionValue: row?.mademCommissionValue != null ? String(row.mademCommissionValue) : '',
     status: row?.status ?? 'OPEN',
+    contractExpiryDate: row?.contractExpiryDate ?? '',
   });
   const set = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
+
+  // Seller is pulled from the selected property's owner contact.
+  const selectedProperty = props.data?.find((p) => p.id === f.propertyId);
+  const sellerOwnerId = (selectedProperty as { ownerContactId?: string | null } | undefined)?.ownerContactId ?? null;
+  const sellerName = sellerOwnerId ? (contacts.data?.find((c) => c.id === sellerOwnerId)?.fullName ?? null) : null;
 
   return (
     <Modal open onClose={onClose} title={isEdit ? `Edit ${row!.code}` : 'New deal'} wide>
@@ -430,25 +434,25 @@ function DealModal({ row, onClose, onSubmit, pending }: { row?: DealRow; onClose
               mademCommissionValue: f.mademCommissionValue ? Number(f.mademCommissionValue) : undefined,
               status: f.status,
               buyerContactId: f.buyerContactId || undefined,
-              sellerContactId: f.sellerContactId || undefined,
+              contractExpiryDate: f.dealType === 'RENT' && f.contractExpiryDate ? f.contractExpiryDate : null,
             });
           } else {
             onSubmit({
               propertyId: f.propertyId,
               opportunityId: f.opportunityId || undefined,
               buyerContactId: f.buyerContactId || undefined,
-              sellerContactId: f.sellerContactId || undefined,
               agentUserId: f.agentUserId,
               dealType: f.dealType,
               finalPrice: f.finalPrice ? Number(f.finalPrice) : undefined,
               mademCommissionValue: f.mademCommissionValue ? Number(f.mademCommissionValue) : undefined,
+              contractExpiryDate: f.dealType === 'RENT' && f.contractExpiryDate ? f.contractExpiryDate : undefined,
             });
           }
         }}
         className="space-y-4"
       >
         {!isEdit && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Property">
               <Select value={f.propertyId} onChange={(e) => set('propertyId', e.target.value)} required>
                 <option value="">Select property…</option>
@@ -471,15 +475,17 @@ function DealModal({ row, onClose, onSubmit, pending }: { row?: DealRow; onClose
             </Field>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Buyer">
-            <ContactSelect value={f.buyerContactId} onChange={(id) => set('buyerContactId', id)} options={buyers} placeholder="—" />
+            <ContactSelect value={f.buyerContactId} onChange={(id) => set('buyerContactId', id)} options={buyers} placeholder="-" />
           </Field>
-          <Field label="Seller">
-            <ContactSelect value={f.sellerContactId} onChange={(id) => set('sellerContactId', id)} options={sellers} placeholder="—" />
+          <Field label="Seller (property owner)">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+              {!f.propertyId ? 'Select a property first' : sellerName ?? 'This property has no owner set'}
+            </div>
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {isEdit ? (
             <Field label="Status">
               <Select value={f.status} onChange={(e) => set('status', e.target.value)}>
@@ -502,6 +508,14 @@ function DealModal({ row, onClose, onSubmit, pending }: { row?: DealRow; onClose
             <Input type="number" value={f.finalPrice} onChange={(e) => set('finalPrice', e.target.value)} />
           </Field>
         </div>
+        {f.dealType === 'RENT' && (
+          <Field label="Contract expiry date">
+            <Input type="date" value={f.contractExpiryDate} onChange={(e) => set('contractExpiryDate', e.target.value)} />
+            <p className="mt-1 text-xs text-gray-400">
+              Reminders fire 1 month, 1 week, and on the expiry day - sent to all users.
+            </p>
+          </Field>
+        )}
         <Field label="Madem Commission Value (€)">
           <Input type="number" min="0" step="0.01" value={f.mademCommissionValue} onChange={(e) => set('mademCommissionValue', e.target.value)} />
         </Field>

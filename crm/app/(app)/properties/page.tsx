@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
 import { api, tx } from '@/lib/api';
+import { toast } from '@/lib/toast';
 import { uploadFile } from '@/lib/upload';
 import { useAgents, useContacts, useLocationLookups } from '@/lib/queries';
 import { Badge, Button, Input, Modal, PageHeader, Select, StatusBadge, Table } from '@/components/ui';
@@ -124,7 +125,7 @@ function PropertiesPageInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput, minInput, maxInput]);
 
-  /** Reset every filter — clears both the URL and the local debounced inputs. */
+  /** Reset every filter - clears both the URL and the local debounced inputs. */
   function clearAll() {
     setSearchInput('');
     setMinInput('');
@@ -143,7 +144,7 @@ function PropertiesPageInner() {
 
   // Resolve agent/owner names client-side (the property payload carries only IDs).
   const agents = useAgents();
-  const owners = useContacts('OWNER');
+  const owners = useContacts();
   const locations = useLocationLookups();
   const cityNames = useMemo(
     () => Array.from(new Set(locations.data?.cities.map((c) => c.name) ?? [])).sort((a, b) => a.localeCompare(b)),
@@ -158,8 +159,8 @@ function PropertiesPageInner() {
     filters.maxPrice ||
     filters.search
   );
-  const agentName = (id?: string | null) => agents.data?.find((a) => a.id === id)?.fullName ?? '—';
-  const ownerName = (id?: string | null) => owners.data?.find((o) => o.id === id)?.fullName ?? '—';
+  const agentName = (id?: string | null) => agents.data?.find((a) => a.id === id)?.fullName ?? '-';
+  const ownerName = (id?: string | null) => owners.data?.find((o) => o.id === id)?.fullName ?? '-';
 
   // Draft count for the quick-filter chip (independent of the active filters).
   const { data: draftMeta } = useQuery({
@@ -169,7 +170,7 @@ function PropertiesPageInner() {
   const draftCount = draftMeta?.total ?? 0;
 
   const create = useMutation({
-    mutationFn: async ({ v, images }: { v: PropertyFormValues; images: File[] }) => {
+    mutationFn: async ({ v, images, videos }: { v: PropertyFormValues; images: File[]; videos: File[] }) => {
       const { data, error } = await api.POST('/api/properties', { body: toPropertyBody(v) });
       if (error) throw error;
       // Property exists now → upload each staged photo and attach it. First = cover.
@@ -182,12 +183,32 @@ function PropertiesPageInner() {
           });
         }
       }
+      // Then upload each staged video. First (sort_order 0) plays on hover on the website.
+      if (data && videos.length) {
+        for (const video of videos) {
+          const { publicUrl, key } = await uploadFile('properties', video);
+          await api.POST('/api/properties/{id}/videos', {
+            params: { path: { id: data.id } },
+            body: { videoUrl: publicUrl, storageKey: key },
+          });
+        }
+      }
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data) => {
       qc.invalidateQueries({ queryKey: ['properties'] });
       qc.invalidateQueries({ queryKey: ['properties-draft-count'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] }); // refresh the bell badge now, not in 60s
       setOpen(false);
+      // Immediate, on-page feedback: how many open opportunities this new property matched.
+      if (data?.id) {
+        const matches = (await api.GET('/api/properties/{id}/matches', { params: { path: { id: data.id } } })).data ?? [];
+        const n = matches.length;
+        if (n > 0) toast.success(`Property created · ${n} matching ${n === 1 ? 'opportunity' : 'opportunities'} found 🎯`);
+        else toast.success('Property created · no matching opportunities yet');
+      } else {
+        toast.success('Property created');
+      }
     },
   });
 
@@ -218,7 +239,7 @@ function PropertiesPageInner() {
   });
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Properties"
         subtitle={`${data?.meta.total ?? 0} listings`}
@@ -441,7 +462,7 @@ function PropertiesPageInner() {
       <Modal open={open} onClose={() => setOpen(false)} title="New property" wide>
         <PropertyForm
           enableImages
-          onSubmit={(v, images) => create.mutate({ v, images })}
+          onSubmit={(v, images, videos) => create.mutate({ v, images, videos })}
           onCancel={() => setOpen(false)}
           pending={create.isPending}
           submitLabel="Create property"
@@ -475,7 +496,7 @@ function PropertiesPageInner() {
             <p className="text-sm text-gray-600">
               Are you sure you want to delete{' '}
               <span className="font-medium text-gray-800">
-                {deleting.propertyCode} — {tx(deleting.titleJson)}
+                {deleting.propertyCode} - {tx(deleting.titleJson)}
               </span>
               ? This action cannot be undone.
             </p>
@@ -560,7 +581,7 @@ function pageNumbers(current: number, total: number): (number | '…')[] {
 function deleteErrorMessage(err: unknown): string {
   const e = err as { code?: string; message?: string } | null;
   if (e?.code === 'fk_violation') {
-    return 'This property can’t be deleted because it has linked records — agreements, offers, deals, viewings, or contracts. Remove or archive those first.';
+    return 'This property can’t be deleted because it has linked records - agreements, offers, deals, viewings, or contracts. Remove or archive those first.';
   }
   return e?.message || 'Something went wrong while deleting. Please try again.';
 }
@@ -572,7 +593,7 @@ function typeLabel(t: string) {
 
 /** Short, locale-friendly date for the list (e.g. "18 Jun 2026"). */
 function formatDate(value: string | Date | null | undefined) {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+  return Number.isNaN(d.getTime()) ? '-' : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }

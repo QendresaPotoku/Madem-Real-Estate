@@ -2,14 +2,14 @@ import { useParams, Link } from "wouter";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useProperty, useAgents, useProperties } from "@/hooks/useApi";
-import { PropertyGallery } from "@/components/PropertyGallery";
+import { PropertyMediaGallery } from "@/components/PropertyMediaGallery";
 import { PropertyBadge } from "@/components/PropertyBadge";
 import { ContactForm } from "@/components/ContactForm";
 import { AgentCard } from "@/components/AgentCard";
 import { PropertyGrid } from "@/components/PropertyGrid";
 import { useFavorites } from "@/hooks/useFavorites";
 import {
-  Bed, Bath, Square, MapPin, Heart, Share2, Check, X, Building2,
+  Bed, Bath, Square, MapPin, Heart, Share2, Check, Building2,
   Hash, Tag, Ruler, LandPlot, Layers, Sparkles, Calendar, Flame, Compass, Clock,
   type LucideIcon,
 } from "lucide-react";
@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import NotFound from "./not-found";
 import { useT } from "@/i18n/useT";
+import { Seo } from "@/components/Seo";
+import { absoluteUrl } from "@/lib/seo";
 
 export default function PropertyDetail() {
   const { id } = useParams();
@@ -49,7 +51,7 @@ export default function PropertyDetail() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Property Details — only rendered when a value is present.
+  // Property Details - only rendered when a value is present.
   const detailRows: { label: string; value: string; icon: LucideIcon }[] = [
     { label: t("propertyDetail.referenceNumber"), value: property.referenceNumber, icon: Hash },
     { label: t("searchFilters.propertyType"), value: tEnum("propertyType", property.type), icon: Building2 },
@@ -78,13 +80,56 @@ export default function PropertyDetail() {
 
   const mapQuery = encodeURIComponent(`${property.neighborhood}, ${property.city}, Kosovo`);
 
+  // --- SEO: keyword-rich title/description + listing structured data ---------
+  const seoType = tEnum("propertyType", property.type);
+  const seoStatus = property.status === "For Rent" ? t("seo.forRent") : t("seo.forSale");
+  const priceText =
+    property.status === "For Rent"
+      ? `€${property.price.toLocaleString(locale)} ${t("common.perMonth")}`
+      : `€${property.price.toLocaleString(locale)}`;
+  const seoVars = {
+    title: tx(property.title),
+    type: seoType,
+    status: seoStatus,
+    city: property.city,
+    neighborhood: property.neighborhood,
+    area: property.area,
+    price: priceText,
+  };
+  const canonicalPath = `/properties/${property.id}`;
+  const listingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: tx(property.title),
+    description: tx(property.description),
+    image: property.images,
+    category: seoType,
+    sku: property.referenceNumber,
+    url: absoluteUrl(canonicalPath),
+    offers: {
+      "@type": "Offer",
+      price: property.price,
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+      url: absoluteUrl(canonicalPath),
+    },
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-20">
+      <Seo
+        title={t("seo.propertyTitle", seoVars)}
+        description={t("seo.propertyDescription", seoVars)}
+        image={property.images[0]}
+        path={canonicalPath}
+        type="article"
+        jsonLd={listingJsonLd}
+      />
       <Header />
 
       {/* Top Banner */}
       <div className="bg-white border-b border-gray-100 py-4">
-        <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
             <Link href="/properties" className="text-xs font-semibold tracking-widest uppercase text-gray-400 hover:text-[#0B3A36] transition-colors">
               ← {t("propertyDetail.backToProperties")}
@@ -107,7 +152,7 @@ export default function PropertyDetail() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto py-8">
         {/* Header Info: Title · Price · Location */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
@@ -132,9 +177,9 @@ export default function PropertyDetail() {
           </div>
         </div>
 
-        {/* Gallery */}
+        {/* Gallery — videos first, then photos */}
         <div className="mb-12">
-          <PropertyGallery images={property.images} />
+          <PropertyMediaGallery images={property.images} videos={property.videos ?? []} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -203,25 +248,27 @@ export default function PropertyDetail() {
               </div>
             </div>
 
-            {/* Amenities */}
-            <div>
-              <h3 className="font-serif text-2xl font-bold text-[#0B3A36] mb-6">{t("propertyDetail.amenities")}</h3>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {amenityList.map(({ key, on }) => (
-                  <li
-                    key={key}
-                    className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-4 py-3"
-                  >
-                    {on ? (
-                      <Check className="w-5 h-5 text-[#0B3A36] shrink-0" />
-                    ) : (
-                      <X className="w-5 h-5 text-gray-300 shrink-0" />
-                    )}
-                    <span className={`text-sm ${on ? "text-gray-800" : "text-gray-400 line-through"}`}>{tg(key)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Amenities — only show the ones the property actually has; hide the
+                section entirely when there are none, so absent features aren't
+                highlighted. */}
+            {amenityList.some(({ on }) => on) && (
+              <div>
+                <h3 className="font-serif text-2xl font-bold text-[#0B3A36] mb-6">{t("propertyDetail.amenities")}</h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {amenityList
+                    .filter(({ on }) => on)
+                    .map(({ key }) => (
+                      <li
+                        key={key}
+                        className="flex items-center gap-3 bg-white border border-gray-100 rounded-lg px-4 py-3"
+                      >
+                        <Check className="w-5 h-5 text-[#0B3A36] shrink-0" />
+                        <span className="text-sm text-gray-800">{tg(key)}</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
 
             {/* Map */}
             <div>

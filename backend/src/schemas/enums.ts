@@ -6,7 +6,6 @@
 export const USER_ROLES = ['ADMIN', 'AGENT'] as const;
 export const USER_STATUSES = ['ACTIVE', 'INACTIVE', 'SUSPENDED'] as const;
 
-export const CONTACT_TYPES = ['OWNER', 'BUYER', 'TENANT', 'LANDLORD', 'INVESTOR'] as const;
 export const CONTACT_SOURCES = ['WEBSITE', 'REFERRAL', 'WALK_IN', 'PHONE', 'SOCIAL', 'OTHER'] as const;
 
 export const PROPERTY_STATUSES = ['DRAFT', 'ACTIVE', 'RESERVED', 'SOLD', 'RENTED', 'ARCHIVED'] as const;
@@ -68,18 +67,16 @@ export const DOCUMENT_CATEGORIES = ['OWNERSHIP', 'CONTRACT', 'IDENTITY', 'FINANC
 export const DOCUMENT_STATUSES = ['PENDING', 'VERIFIED', 'REJECTED', 'EXPIRED'] as const;
 
 export const HEATING_KEYS = [
+  'TERMOKOS',
   'ELECTRICITY',
   'HEAT_PUMP',
-  'DISTRICT_HEATING',
   'AC',
-  'PELLET',
-  'WOOD',
+  'PELLET_WOOD',
 ] as const;
 
 // Convenience union types
 export type UserRole = (typeof USER_ROLES)[number];
 export type UserStatus = (typeof USER_STATUSES)[number];
-export type ContactType = (typeof CONTACT_TYPES)[number];
 export type ContactSource = (typeof CONTACT_SOURCES)[number];
 export type PropertyStatus = (typeof PROPERTY_STATUSES)[number];
 export type ListingType = (typeof LISTING_TYPES)[number];

@@ -6,12 +6,11 @@ import { DocumentType, HeatingType, User } from '../entities';
 import { HEATING_KEYS, type Localized } from '../schemas/enums';
 
 const heatingLabels: Record<string, Localized> = {
-  ELECTRICITY: { en: 'Electricity', sq: 'Energji elektrike', de: 'Strom' },
-  HEAT_PUMP: { en: 'Heat Pump', sq: 'Pompë nxehtësie', de: 'Wärmepumpe' },
-  DISTRICT_HEATING: { en: 'District Heating', sq: 'Ngrohje qendrore', de: 'Fernwärme' },
-  AC: { en: 'Air Conditioning', sq: 'Kondicioner', de: 'Klimaanlage' },
-  PELLET: { en: 'Pellet', sq: 'Pelet', de: 'Pellet' },
-  WOOD: { en: 'Wood', sq: 'Dru', de: 'Holz' },
+  TERMOKOS: { en: 'Termokos', sq: 'Termokos', de: 'Termokos' },
+  ELECTRICITY: { en: 'Electricity', sq: 'Rrymë', de: 'Strom' },
+  HEAT_PUMP: { en: 'Heat Pump', sq: 'Pompë termike', de: 'Wärmepumpe' },
+  AC: { en: 'Air Conditioning', sq: 'Klimë', de: 'Klimaanlage' },
+  PELLET_WOOD: { en: 'Pellet & Wood', sq: 'Pelet dhe Dru', de: 'Pellet und Holz' },
 };
 
 const documentTypes: Array<{ category: DocumentType['category']; key: string; label: Localized }> = [
@@ -53,7 +52,14 @@ async function seed() {
       [key, JSON.stringify(heatingLabels[key]), i],
     );
   }
-  console.log(`✔ ${HEATING_KEYS.length} heating types seeded`);
+  // Retire heating types no longer in the canonical set so they drop out of the
+  // (is_active=true) option list. Deactivate rather than delete to respect the
+  // RESTRICT FK from properties.heating_type_id.
+  await queryRunner.query(
+    `UPDATE heating_types SET is_active = false WHERE key <> ALL($1::text[])`,
+    [HEATING_KEYS as unknown as string[]],
+  );
+  console.log(`✔ ${HEATING_KEYS.length} heating types seeded (others deactivated)`);
 
   // Document types (idempotent upsert on key)
   for (const d of documentTypes) {

@@ -68,7 +68,7 @@ async function seedDemo() {
   const propRepo = AppDataSource.getRepository(Property);
   const existing = await propRepo.count();
   if (existing > 0) {
-    console.log(`• ${existing} properties already exist — skipping property seed`);
+    console.log(`• ${existing} properties already exist - skipping property seed`);
     await AppDataSource.destroy();
     return;
   }

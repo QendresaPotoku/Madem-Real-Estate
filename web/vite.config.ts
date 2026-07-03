@@ -1,10 +1,14 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const rawPort = process.env.PORT;
+// On Replit these come from the platform environment; locally they are read
+// from web/.env (loadEnv with an empty prefix loads all vars, not just VITE_*).
+const env = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
+
+const rawPort = process.env.PORT || env.PORT;
 
 if (!rawPort) {
   throw new Error(
@@ -18,7 +22,7 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
+const basePath = process.env.BASE_PATH || env.BASE_PATH;
 
 if (!basePath) {
   throw new Error(

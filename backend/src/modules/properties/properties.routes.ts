@@ -1,10 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { ListingAgreement, Property } from '../../entities';
+import { Property } from '../../entities';
 import { AppError } from '../../lib/errors';
 import { paginate } from '../../lib/pagination';
 import { errorResponseSchema, uuidParamSchema } from '../../schemas/common';
+import { recomputeMatchesForProperty } from '../matches/matching.service';
 import {
   createPropertyBody,
   propertyListQuery,
@@ -19,28 +20,6 @@ const SORTABLE = {
   price: 'p.price',
   publishedDate: 'p.published_date',
 };
-
-const NO_ACTIVE_AGREEMENT = 'Property cannot be published without an active listing agreement.';
-
-/**
- * Guard: a property may only be ACTIVE while it has a *current* ACTIVE listing
- * agreement (status ACTIVE, started, and not past its end date). Throws 400 if not.
- * On create no agreement can exist yet (the property has no id to reference), so
- * `propertyId` is omitted there and the guard always blocks — enforcing the
- * intended DRAFT → active agreement → publish flow.
- */
-async function assertPublishable(app: FastifyInstance, propertyId?: string): Promise<void> {
-  if (!propertyId) throw AppError.badRequest(NO_ACTIVE_AGREEMENT);
-  const count = await app
-    .repo(ListingAgreement)
-    .createQueryBuilder('la')
-    .where('la.property_id = :id', { id: propertyId })
-    .andWhere("la.status = 'ACTIVE'")
-    .andWhere('la.start_date <= CURRENT_DATE')
-    .andWhere('(la.end_date IS NULL OR la.end_date >= CURRENT_DATE)')
-    .getCount();
-  if (count === 0) throw AppError.badRequest(NO_ACTIVE_AGREEMENT);
-}
 
 export async function propertyRoutes(app: FastifyInstance) {
   const r = app.withTypeProvider<ZodTypeProvider>();
@@ -103,13 +82,13 @@ export async function propertyRoutes(app: FastifyInstance) {
       },
     },
     async (req, reply) => {
-      // A brand-new property cannot yet have a listing agreement, so publishing
-      // straight to ACTIVE is always blocked — create as DRAFT, then publish.
-      if (req.body.status === 'ACTIVE') await assertPublishable(app);
       const repo = app.repo(Property);
       const saved = await repo.save(repo.create({ ...req.body, createdBy: req.authUser!.id }));
       // Reload so the DB-trigger-generated `property_code` (and timestamps) are present.
-      return reply.status(201).send(await repo.findOneByOrFail({ id: saved.id }));
+      const full = await repo.findOneByOrFail({ id: saved.id });
+      // Run the matching algorithm against open opportunities; notify their agents of new matches.
+      await recomputeMatchesForProperty(app.db, saved.id, { notify: true });
+      return reply.status(201).send(full);
     },
   );
 
@@ -129,9 +108,9 @@ export async function propertyRoutes(app: FastifyInstance) {
       const property = await repo.findOneBy({ id: req.params.id });
       if (!property) throw AppError.notFound('Property');
       repo.merge(property, req.body);
-      // Enforce the publish guard whenever the update leaves the property ACTIVE.
-      if (property.status === 'ACTIVE') await assertPublishable(app, property.id);
       await repo.save(property);
+      // Re-match against open opportunities (price/location/status edits change matches).
+      await recomputeMatchesForProperty(app.db, property.id, { notify: true });
       return property;
     },
   );

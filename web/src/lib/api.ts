@@ -35,10 +35,12 @@ interface ApiProperty {
   agentUserId: string;
   attributesJson: Record<string, unknown>;
   coverImageUrl: string | null;
+  coverVideoUrl: string | null;
   createdAt: string;
 }
 interface ApiPropertyDetail extends ApiProperty {
   images: { id: string; imageUrl: string; isCover: boolean; sortOrder: number }[];
+  videos: { id: string; videoUrl: string; sortOrder: number }[];
 }
 interface ApiAgent {
   id: string;
@@ -82,7 +84,7 @@ const ORIENTATION_MAP: Record<string, Orientation> = {
   WEST: "West",
 };
 
-function mapProperty(p: ApiProperty, images?: string[]): Property {
+function mapProperty(p: ApiProperty, images?: string[], videos?: string[]): Property {
   const attrs = p.attributesJson ?? {};
   const status: PropertyStatus = p.listingType === "RENT" ? "For Rent" : "For Sale";
   return {
@@ -113,6 +115,8 @@ function mapProperty(p: ApiProperty, images?: string[]): Property {
     terrace: !!attrs.terrace,
     airConditioning: !!attrs.airConditioning,
     images: images ?? (p.coverImageUrl ? [p.coverImageUrl] : []),
+    videoUrl: p.coverVideoUrl ?? undefined,
+    videos: videos ?? (p.coverVideoUrl ? [p.coverVideoUrl] : []),
     agentId: p.agentUserId,
     isFeatured: p.isFeatured,
     createdAt: p.createdAt,
@@ -147,7 +151,11 @@ export async function fetchProperties(): Promise<Property[]> {
 
 export async function fetchProperty(code: string): Promise<Property> {
   const p = await getJson<ApiPropertyDetail>(`/api/public/properties/${encodeURIComponent(code)}`);
-  return mapProperty(p, p.images.map((i) => i.imageUrl));
+  return mapProperty(
+    p,
+    p.images.map((i) => i.imageUrl),
+    (p.videos ?? []).map((v) => v.videoUrl),
+  );
 }
 
 export async function fetchAgents(): Promise<Agent[]> {
@@ -165,7 +173,6 @@ export interface LeadPayload {
   phone?: string;
   email?: string;
   message?: string;
-  contactType?: "BUYER" | "TENANT" | "OWNER" | "LANDLORD";
   propertyId?: string;
   propertyCode?: string;
   listingType?: "SALE" | "RENT";

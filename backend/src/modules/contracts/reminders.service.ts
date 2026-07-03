@@ -29,8 +29,8 @@ export async function regenerateExpiryReminders(manager: EntityManager, contract
         remindAt: endDateMinusDays(contract.endDate, days),
         message:
           days === 0
-            ? `Rental contract ${contract.code} ends today — confirm if the property is free or still rented.`
-            : `Rental contract ${contract.code} ends in ${days} day(s) — follow up with the parties.`,
+            ? `Rental contract ${contract.code} ends today. Confirm if the property is free or still rented.`
+            : `Rental contract ${contract.code} ends in ${days} day(s). Follow up with the parties.`,
         status: 'PENDING',
       }),
     );

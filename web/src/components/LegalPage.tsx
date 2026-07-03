@@ -16,13 +16,13 @@ export function LegalPage({ page }: LegalPageProps) {
       <Header />
 
       <div className="bg-[#0B3A36] py-16 text-white text-center">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">{tx(content.title)}</h1>
           <p className="text-gray-300">{tx(content.updated)}</p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 flex-grow max-w-4xl">
+      <div className="container mx-auto py-16 flex-grow max-w-4xl">
         <div className="bg-white p-8 md:p-12 rounded-lg shadow-sm border border-gray-100 prose max-w-none text-gray-700">
           {content.blocks.map((block, idx) => {
             if (block.kind === "h2") {

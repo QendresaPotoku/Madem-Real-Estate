@@ -7,7 +7,7 @@ import { Deal } from './deal.entity';
 import { User } from './user.entity';
 import { ACTIVITY_TYPES, type ActivityType } from '../schemas/enums';
 
-/** History: calls, meetings, messages, notes — linked to any pipeline entity. */
+/** History: calls, meetings, messages, notes - linked to any pipeline entity. */
 @Entity({ name: 'activities' })
 @Index(['contactId'])
 @Index(['propertyId'])

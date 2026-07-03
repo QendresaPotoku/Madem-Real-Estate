@@ -85,8 +85,6 @@ export function CreateRequestForm() {
         fullName: values.name,
         email: values.email,
         phone: values.phone,
-        // Renters are TENANTs, buyers are BUYERs — keep the contact type aligned to intent.
-        contactType: values.intent === "rent" ? "TENANT" : "BUYER",
         listingType: values.intent === "rent" ? "RENT" : "SALE",
         propertyType: REQUEST_TYPE_MAP[values.propertyType],
         city: values.location,

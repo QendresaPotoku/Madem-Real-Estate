@@ -30,7 +30,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Notifications"
         subtitle={unread > 0 ? `${unread} unread` : 'All caught up'}

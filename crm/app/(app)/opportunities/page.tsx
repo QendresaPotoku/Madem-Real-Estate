@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
@@ -10,6 +10,7 @@ import { toast } from '@/lib/toast';
 import { useAgents, useContacts, useLocationLookups } from '@/lib/queries';
 import { Button, Field, Input, Modal, PageHeader, Select, Table } from '@/components/ui';
 import { ContactModal } from '@/components/contact-modal';
+import { ShareButton } from '@/components/share-property';
 import { cn } from '@/lib/cn';
 
 const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'VILLA', 'LAND', 'OFFICE', 'SHOP', 'WAREHOUSE', 'BUILDING'] as const;
@@ -207,14 +208,15 @@ function OpportunitiesInner() {
 
   const contacts = useContacts();
   const agents = useAgents();
-  const contactName = (id: string) => contacts.data?.find((c) => c.id === id)?.fullName ?? '—';
-  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '—' : 'Unassigned');
+  const contactName = (id: string) => contacts.data?.find((c) => c.id === id)?.fullName ?? '-';
+  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '-' : 'Unassigned');
 
   // URL is the source of truth for filters/page, so views are shareable.
   const status = sp.get('status') ?? '';
   const propertyType = sp.get('propertyType') ?? '';
   const listingType = sp.get('listingType') ?? '';
   const assignedAgentId = sp.get('assignedAgentId') ?? '';
+  const highlightedOppId = sp.get('opportunityId');
   const page = Math.max(1, Number(sp.get('page') ?? '1') || 1);
   const view = sp.get('view') === 'board' ? 'board' : 'table';
   const anyFilter = !!(status || propertyType || listingType || assignedAgentId);
@@ -252,6 +254,12 @@ function OpportunitiesInner() {
       (await api.GET('/api/opportunities', { params: { query: { limit: BOARD_LIMIT, ...filterQuery } } })).data,
   });
 
+  // Scroll to and highlight a deep-linked opportunity (e.g. from a property's matches panel).
+  useEffect(() => {
+    if (!highlightedOppId || !data?.data.length) return;
+    document.getElementById(`opp-${highlightedOppId}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [highlightedOppId, data?.data.length]);
+
   const invalidate = () => qc.invalidateQueries({ queryKey: ['opportunities'] });
 
   const save = useMutation({
@@ -280,7 +288,7 @@ function OpportunitiesInner() {
   const totalPages = data?.meta.totalPages ?? 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Opportunities"
         subtitle={`${data?.meta.total ?? 0} buyer/renter requests`}
@@ -375,13 +383,17 @@ function OpportunitiesInner() {
         }
       >
         {data?.data.map((o) => (
-          <tr key={o.id} className="hover:bg-gray-50">
+          <tr
+            id={`opp-${o.id}`}
+            key={o.id}
+            className={cn('hover:bg-gray-50', highlightedOppId === o.id && 'bg-gold/10 ring-2 ring-inset ring-gold/50')}
+          >
             <td className="px-4 py-3 font-mono text-xs text-gray-500">{o.code}</td>
             <td className="px-4 py-3 font-medium text-gray-800">{contactName(o.contactId)}</td>
             <td className="px-4 py-3 text-gray-700">
               {o.listingType === 'SALE' ? 'Buy' : 'Rent'} · {typeLabel(o.propertyType)}
             </td>
-            <td className="px-4 py-3 text-gray-600">{[o.city, o.area].filter(Boolean).join(', ') || '—'}</td>
+            <td className="px-4 py-3 text-gray-600">{[o.city, o.area].filter(Boolean).join(', ') || '-'}</td>
             <td className="px-4 py-3 text-right text-gray-600">{budgetLabel(o.budgetMin, o.budgetMax, o.currency)}</td>
             <td className="px-4 py-3 text-gray-600">{agentName(o.assignedAgentId)}</td>
             <td className="px-4 py-3">
@@ -610,7 +622,7 @@ function OpportunityBoard({
                     <p className="mt-0.5 text-xs text-gray-500">
                       {o.listingType === 'SALE' ? 'Buy' : 'Rent'} · {typeLabel(o.propertyType)}
                     </p>
-                    <p className="text-xs text-gray-500">{[o.city, o.area].filter(Boolean).join(', ') || '—'}</p>
+                    <p className="text-xs text-gray-500">{[o.city, o.area].filter(Boolean).join(', ') || '-'}</p>
                     <div className="mt-1.5 flex items-center justify-between">
                       <span className="text-xs font-medium text-brand">{budgetLabel(o.budgetMin, o.budgetMax, o.currency)}</span>
                       <span className="truncate pl-2 text-[10px] text-gray-400">{agentName(o.assignedAgentId)}</span>
@@ -661,7 +673,7 @@ function budgetLabel(min: number | null, max: number | null, currency: string): 
   if (min != null && max != null) return `${min.toLocaleString()} – ${max.toLocaleString()} ${currency}`;
   if (max != null) return `≤ ${max.toLocaleString()} ${currency}`;
   if (min != null) return `≥ ${min.toLocaleString()} ${currency}`;
-  return '—';
+  return '-';
 }
 
 /** Turn a delete API error into a human-readable reason for the modal. */
@@ -745,14 +757,14 @@ function OpportunityModal({ row, onClose, onSubmit, pending }: { row?: Row; onCl
         }}
         className="space-y-5"
       >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {!row && (
             <Field label="Contact">
               <Select value={f.contactId} onChange={(e) => set('contactId', e.target.value)} required>
                 <option value="">Select contact…</option>
                 {contacts.data?.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.fullName} ({c.contactType})
+                    {c.fullName}
                   </option>
                 ))}
               </Select>
@@ -776,7 +788,7 @@ function OpportunityModal({ row, onClose, onSubmit, pending }: { row?: Row; onCl
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Looking to">
             <Select value={f.listingType} onChange={(e) => set('listingType', e.target.value)}>
               {LISTING_TYPES.map((t) => (
@@ -795,7 +807,7 @@ function OpportunityModal({ row, onClose, onSubmit, pending }: { row?: Row; onCl
           </Field>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Country">
             <Select
               value={f.country}
@@ -835,7 +847,7 @@ function OpportunityModal({ row, onClose, onSubmit, pending }: { row?: Row; onCl
           </Field>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Budget min">
             <Input type="number" value={f.budgetMin} onChange={(e) => set('budgetMin', e.target.value)} />
           </Field>
@@ -852,7 +864,7 @@ function OpportunityModal({ row, onClose, onSubmit, pending }: { row?: Row; onCl
             <p className="mb-2 border-t border-gray-100 pt-4 text-xs font-semibold uppercase tracking-wide text-gray-400">
               {f.propertyType.charAt(0) + f.propertyType.slice(1).toLowerCase()} requirements
             </p>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {reqDefs.map((def) =>
                 def.type === 'boolean' ? (
                   <div key={def.key} className="flex items-center pt-6">
@@ -861,7 +873,7 @@ function OpportunityModal({ row, onClose, onSubmit, pending }: { row?: Row; onCl
                 ) : def.type === 'select' ? (
                   <Field key={def.key} label={def.label}>
                     <Select value={String(reqs[def.key] ?? '')} onChange={(e) => setReq(def.key, e.target.value)}>
-                      <option value="">—</option>
+                      <option value="">-</option>
                       {def.options.map((o) => (
                         <option key={o.value} value={o.value}>
                           {o.label}
@@ -977,18 +989,27 @@ function MatchesModal({ opportunityId, onClose }: { opportunityId: string; onClo
                   </div>
                 </div>
 
-                <Select
-                  value={m.status}
-                  onChange={(e) => setStatus.mutate({ id: m.id, status: e.target.value })}
-                  disabled={setStatus.isPending}
-                  className="w-32 shrink-0 py-1.5 text-xs"
-                >
-                  {MATCH_STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </Select>
+                <div className="flex shrink-0 items-center gap-2">
+                  {m.property?.propertyCode && (
+                    <ShareButton
+                      code={m.property.propertyCode}
+                      title={m.property ? tx(m.property.titleJson) : undefined}
+                      onShared={() => setStatus.mutate({ id: m.id, status: 'SHARED' })}
+                    />
+                  )}
+                  <Select
+                    value={m.status}
+                    onChange={(e) => setStatus.mutate({ id: m.id, status: e.target.value })}
+                    disabled={setStatus.isPending}
+                    className="w-32 py-1.5 text-xs"
+                  >
+                    {MATCH_STATUS_OPTIONS.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
               </li>
             );
           })}

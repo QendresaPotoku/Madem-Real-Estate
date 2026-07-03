@@ -34,10 +34,13 @@ import { activityRoutes } from './modules/activities/activities.routes';
 import { taskRoutes } from './modules/tasks/tasks.routes';
 import { uploadRoutes } from './modules/uploads/uploads.routes';
 import { propertyImageRoutes } from './modules/properties/property-images.routes';
+import { propertyVideoRoutes } from './modules/properties/property-videos.routes';
 import { propertyDocumentRoutes } from './modules/properties/property-documents.routes';
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes';
 import { publicRoutes } from './modules/public/public.routes';
 import { notificationRoutes } from './modules/notifications/notifications.routes';
+import { translationRoutes } from './modules/translation/translation.routes';
+import { runReminderScan } from './cron/reminders.cron';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -86,6 +89,17 @@ export async function buildApp(): Promise<FastifyInstance> {
     async () => ({ status: 'ok', uptime: process.uptime() }),
   );
 
+  // Internal: Cloud Scheduler triggers the reminder scan here (guarded by a shared
+  // secret header) so the service can scale to zero instead of running a cron.
+  app.post('/internal/run-reminders', { schema: { hide: true }, config: { rateLimit: false } }, async (req, reply) => {
+    if (!config.CRON_SECRET) return reply.code(503).send({ message: 'cron trigger not configured' });
+    // Trim both sides: a secret mounted from Secret Manager can carry a trailing
+    // newline, while the HTTP header is delivered without it.
+    const provided = String(req.headers['x-cron-secret'] ?? '').trim();
+    if (provided !== config.CRON_SECRET.trim()) return reply.code(401).send({ message: 'unauthorized' });
+    return runReminderScan(app);
+  });
+
   // Domain modules
   await app.register(authRoutes, { prefix: '/api/auth' });
   await app.register(userRoutes, { prefix: '/api/users' });
@@ -94,6 +108,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(contactRoutes, { prefix: '/api/contacts' });
   await app.register(propertyRoutes, { prefix: '/api/properties' });
   await app.register(propertyImageRoutes, { prefix: '/api/properties' });
+  await app.register(propertyVideoRoutes, { prefix: '/api/properties' });
   await app.register(propertyDocumentRoutes, { prefix: '/api/properties' });
   await app.register(listingAgreementRoutes, { prefix: '/api/listing-agreements' });
   await app.register(opportunityRoutes, { prefix: '/api/opportunities' });
@@ -106,6 +121,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(activityRoutes, { prefix: '/api/activities' });
   await app.register(taskRoutes, { prefix: '/api/tasks' });
   await app.register(notificationRoutes, { prefix: '/api/notifications' });
+  await app.register(translationRoutes, { prefix: '/api/translate' });
   await app.register(uploadRoutes, { prefix: '/api/uploads' });
   await app.register(dashboardRoutes, { prefix: '/api/dashboard' });
   await app.register(publicRoutes, { prefix: '/api/public' });

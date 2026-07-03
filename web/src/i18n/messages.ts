@@ -618,6 +618,9 @@ const searchFilters: Tri<Record<string, string>> = {
     allTypes: "All Types",
     city: "City",
     allCities: "All Cities",
+    allCountries: "All Countries",
+    allAreas: "All Areas",
+    allCadastralZones: "All Cadastral Zones",
     priceRange: "Price Range",
     anyPrice: "Any Price",
     priceUpTo: "Up to €100,000",
@@ -638,6 +641,9 @@ const searchFilters: Tri<Record<string, string>> = {
     allTypes: "Të gjitha llojet",
     city: "Qyteti",
     allCities: "Të gjithë qytetet",
+    allCountries: "Të gjitha shtetet",
+    allAreas: "Të gjitha zonat",
+    allCadastralZones: "Të gjitha zonat kadastrale",
     priceRange: "Diapazoni i çmimit",
     anyPrice: "Çdo çmim",
     priceUpTo: "Deri në €100,000",
@@ -658,6 +664,9 @@ const searchFilters: Tri<Record<string, string>> = {
     allTypes: "Alle Typen",
     city: "Stadt",
     allCities: "Alle Städte",
+    allCountries: "Alle Länder",
+    allAreas: "Alle Gebiete",
+    allCadastralZones: "Alle Katasterzonen",
     priceRange: "Preisspanne",
     anyPrice: "Beliebiger Preis",
     priceUpTo: "Bis 100.000 €",
@@ -822,7 +831,7 @@ const home: Tri<Record<string, string>> = {
     heroTitlePart1: "Discover",
     heroTitleHighlight: "Exceptional",
     heroTitlePart2: "Properties in Kosovo.",
-    subline: "Curated apartments, villas & commercial spaces — verified by our specialists.",
+    subline: "Curated apartments, villas & commercial spaces, verified by our specialists.",
     exploreProperties: "Explore Properties",
     listProperty: "List Your Property",
     tabSale: "Sale",
@@ -832,7 +841,7 @@ const home: Tri<Record<string, string>> = {
     featuredSubtitle: "Curated selection of our most exclusive listings available across Kosovo.",
     standardEyebrow: "The MADEM Standard",
     standardTitle: "Elevating the Real Estate Experience",
-    standardIntro: "We believe that buying or selling a premium property requires more than just a transaction—it requires a partnership built on trust, deep market knowledge, and uncompromising discretion.",
+    standardIntro: "We believe that buying or selling a premium property requires more than just a transaction. It requires a partnership built on trust, deep market knowledge, and uncompromising discretion.",
     discretionTitle: "Absolute Discretion",
     discretionText: "Your privacy is our priority. We handle high-profile transactions with complete confidentiality.",
     portfolioTitle: "Curated Portfolio",
@@ -849,7 +858,7 @@ const home: Tri<Record<string, string>> = {
     expertsTitle: "Our Experts",
     expertsSubtitle: "Dedicated professionals with unparalleled knowledge of the premium real estate market.",
     meetFullTeam: "Meet the Full Team",
-    statProperties: "Premium Properties",
+    statProperties: "Properties Sold",
     statYears: "Years Experience",
     statClients: "Satisfied Clients",
     statCities: "Cities Covered",
@@ -864,7 +873,7 @@ const home: Tri<Record<string, string>> = {
     heroTitlePart1: "Zbuloni prona",
     heroTitleHighlight: "të jashtëzakonshme",
     heroTitlePart2: "në Kosovë.",
-    subline: "Banesa, vila dhe hapësira komerciale të përzgjedhura — të verifikuara nga specialistët tanë.",
+    subline: "Banesa, vila dhe hapësira komerciale të përzgjedhura, të verifikuara nga specialistët tanë.",
     exploreProperties: "Eksploro pronat",
     listProperty: "Listo pronën tënde",
     tabSale: "Shitje",
@@ -874,7 +883,7 @@ const home: Tri<Record<string, string>> = {
     featuredSubtitle: "Përzgjedhje e listimeve tona më ekskluzive të disponueshme në mbarë Kosovën.",
     standardEyebrow: "Standardi i MADEM",
     standardTitle: "Ngritja e përvojës në patundshmëri",
-    standardIntro: "Ne besojmë se blerja ose shitja e një prone premium kërkon më shumë se thjesht një transaksion — kërkon një partneritet të ndërtuar mbi besimin, njohuritë e thella të tregut dhe diskrecionin pa kompromis.",
+    standardIntro: "Ne besojmë se blerja ose shitja e një prone premium kërkon më shumë se thjesht një transaksion. Kërkon një partneritet të ndërtuar mbi besimin, njohuritë e thella të tregut dhe diskrecionin pa kompromis.",
     discretionTitle: "Diskrecion absolut",
     discretionText: "Privatësia juaj është prioriteti ynë. Ne i trajtojmë transaksionet me profil të lartë me konfidencialitet të plotë.",
     portfolioTitle: "Portofol i përzgjedhur",
@@ -891,7 +900,7 @@ const home: Tri<Record<string, string>> = {
     expertsTitle: "Ekspertët tanë",
     expertsSubtitle: "Profesionistë të përkushtuar me njohuri të pakrahasueshme të tregut të patundshmërive premium.",
     meetFullTeam: "Njihni ekipin e plotë",
-    statProperties: "Prona premium",
+    statProperties: "Prona të shitura",
     statYears: "Vite përvojë",
     statClients: "Klientë të kënaqur",
     statCities: "Qytete të mbuluara",
@@ -906,7 +915,7 @@ const home: Tri<Record<string, string>> = {
     heroTitlePart1: "Entdecken Sie",
     heroTitleHighlight: "außergewöhnliche",
     heroTitlePart2: "Immobilien im Kosovo.",
-    subline: "Ausgewählte Wohnungen, Villen & Gewerbeflächen — von unseren Spezialisten geprüft.",
+    subline: "Ausgewählte Wohnungen, Villen & Gewerbeflächen, von unseren Spezialisten geprüft.",
     exploreProperties: "Immobilien entdecken",
     listProperty: "Immobilie inserieren",
     tabSale: "Kauf",
@@ -916,7 +925,7 @@ const home: Tri<Record<string, string>> = {
     featuredSubtitle: "Eine kuratierte Auswahl unserer exklusivsten Angebote im gesamten Kosovo.",
     standardEyebrow: "Der MADEM-Standard",
     standardTitle: "Das Immobilienerlebnis auf ein neues Niveau heben",
-    standardIntro: "Wir sind überzeugt, dass der Kauf oder Verkauf einer Premium-Immobilie mehr als nur eine Transaktion erfordert — er erfordert eine Partnerschaft, die auf Vertrauen, tiefem Marktwissen und kompromissloser Diskretion beruht.",
+    standardIntro: "Wir sind überzeugt, dass der Kauf oder Verkauf einer Premium-Immobilie mehr als nur eine Transaktion erfordert. Sie erfordert eine Partnerschaft, die auf Vertrauen, tiefem Marktwissen und kompromissloser Diskretion beruht.",
     discretionTitle: "Absolute Diskretion",
     discretionText: "Ihre Privatsphäre hat für uns Priorität. Wir wickeln anspruchsvolle Transaktionen mit vollständiger Vertraulichkeit ab.",
     portfolioTitle: "Kuratiertes Portfolio",
@@ -933,7 +942,7 @@ const home: Tri<Record<string, string>> = {
     expertsTitle: "Unsere Experten",
     expertsSubtitle: "Engagierte Fachleute mit unvergleichlichem Wissen über den Premium-Immobilienmarkt.",
     meetFullTeam: "Das gesamte Team kennenlernen",
-    statProperties: "Premium-Immobilien",
+    statProperties: "Verkaufte Immobilien",
     statYears: "Jahre Erfahrung",
     statClients: "Zufriedene Kunden",
     statCities: "Abgedeckte Städte",
@@ -950,6 +959,7 @@ const propertiesPage: Tri<Record<string, string>> = {
     title: "Properties",
     subtitle: "Browse our exclusive collection of premium real estate across Kosovo.",
     showing: "Showing {count} properties",
+    searchPlaceholder: "Search by title...",
     filters: "Filters",
     sortBy: "Sort by",
     newest: "Newest First",
@@ -963,6 +973,7 @@ const propertiesPage: Tri<Record<string, string>> = {
     title: "Pronat",
     subtitle: "Shfletoni koleksionin tonë ekskluziv të patundshmërive premium në mbarë Kosovën.",
     showing: "Po shfaqen {count} prona",
+    searchPlaceholder: "Kërko sipas titullit...",
     filters: "Filtrat",
     sortBy: "Rendit sipas",
     newest: "Më të rejat së pari",
@@ -976,6 +987,7 @@ const propertiesPage: Tri<Record<string, string>> = {
     title: "Immobilien",
     subtitle: "Durchstöbern Sie unsere exklusive Sammlung von Premium-Immobilien im gesamten Kosovo.",
     showing: "{count} Immobilien werden angezeigt",
+    searchPlaceholder: "Nach Titel suchen...",
     filters: "Filter",
     sortBy: "Sortieren nach",
     newest: "Neueste zuerst",
@@ -1082,7 +1094,7 @@ const about: Tri<Record<string, string>> = {
     eyebrow: "Our Story",
     title: "Defining Luxury Real Estate in Kosovo",
     intro: "Founded on the principles of integrity, expertise, and unyielding commitment to quality, MADEM Real Estate represents the finest properties across the region.",
-    para1: "Since our inception over a decade ago, MADEM has specialized in the upper echelon of the Kosovo real estate market. We recognized a need for a brokerage that offered not just property listings, but true advisory services for high-net-worth individuals and corporate investors.",
+    para1: "MADEM specializes in the upper echelon of the Kosovo real estate market. We saw a need for a brokerage that offers not just property listings, but true advisory services for high-net-worth individuals and corporate investors.",
     para2: "Our portfolio is intentionally selective. We curate properties that offer exceptional value, architectural significance, or prime commercial positioning. When you work with MADEM, you are accessing an exclusive network that operates with absolute discretion.",
     para3: "Today, we remain an independent, partner-owned agency. This independence allows us to be agile, hyper-focused on our clients' needs, and uncompromised in our standards.",
     valuesTitle: "Our Values",
@@ -1102,7 +1114,7 @@ const about: Tri<Record<string, string>> = {
     eyebrow: "Historia jonë",
     title: "Duke përkufizuar patundshmëritë luksoze në Kosovë",
     intro: "E themeluar mbi parimet e integritetit, ekspertizës dhe përkushtimit të palëkundur ndaj cilësisë, MADEM Real Estate përfaqëson pronat më të mira në mbarë rajonin.",
-    para1: "Që nga themelimi ynë mbi një dekadë më parë, MADEM është specializuar në segmentin më të lartë të tregut të patundshmërive në Kosovë. Ne identifikuam nevojën për një agjenci që ofronte jo vetëm listime pronash, por shërbime të vërteta këshillimore për individë me pasuri të lartë dhe investitorë korporativë.",
+    para1: "MADEM është specializuar në segmentin më të lartë të tregut të patundshmërive në Kosovë. Ne identifikuam nevojën për një agjenci që ofron jo vetëm listime pronash, por shërbime të vërteta këshillimore për individë me pasuri të lartë dhe investitorë korporativë.",
     para2: "Portofoli ynë është qëllimisht selektiv. Ne përzgjedhim prona që ofrojnë vlerë të jashtëzakonshme, rëndësi arkitekturore ose pozicionim komercial të shkëlqyer. Kur punoni me MADEM, ju qaseni në një rrjet ekskluziv që vepron me diskrecion absolut.",
     para3: "Sot, ne mbetemi një agjenci e pavarur, në pronësi të partnerëve. Kjo pavarësi na lejon të jemi të shkathët, tepër të fokusuar te nevojat e klientëve tanë dhe pa kompromis në standardet tona.",
     valuesTitle: "Vlerat tona",
@@ -1122,7 +1134,7 @@ const about: Tri<Record<string, string>> = {
     eyebrow: "Unsere Geschichte",
     title: "Luxusimmobilien im Kosovo neu definieren",
     intro: "Gegründet auf den Grundsätzen Integrität, Fachkompetenz und kompromisslosem Qualitätsanspruch, repräsentiert MADEM Real Estate die besten Immobilien der Region.",
-    para1: "Seit unserer Gründung vor über einem Jahrzehnt ist MADEM auf das obere Segment des kosovarischen Immobilienmarktes spezialisiert. Wir erkannten den Bedarf an einer Maklerfirma, die nicht nur Immobilienangebote, sondern echte Beratungsdienste für vermögende Privatpersonen und Firmeninvestoren bietet.",
+    para1: "MADEM ist auf das obere Segment des kosovarischen Immobilienmarktes spezialisiert. Wir erkannten den Bedarf an einer Maklerfirma, die nicht nur Immobilienangebote, sondern echte Beratungsdienste für vermögende Privatpersonen und Firmeninvestoren bietet.",
     para2: "Unser Portfolio ist bewusst selektiv. Wir kuratieren Immobilien mit außergewöhnlichem Wert, architektonischer Bedeutung oder erstklassiger gewerblicher Lage. Wenn Sie mit MADEM arbeiten, erhalten Sie Zugang zu einem exklusiven Netzwerk, das mit absoluter Diskretion agiert.",
     para3: "Heute sind wir nach wie vor eine unabhängige, partnergeführte Agentur. Diese Unabhängigkeit erlaubt es uns, agil, hochkonzentriert auf die Bedürfnisse unserer Kunden und kompromisslos in unseren Standards zu sein.",
     valuesTitle: "Unsere Werte",
@@ -1173,7 +1185,7 @@ const contact: Tri<Record<string, string>> = {
     title: "Kontaktieren Sie uns",
     subtitle: "Vereinbaren Sie eine private Beratung mit unseren Immobilienexperten.",
     getInTouch: "Kontakt aufnehmen",
-    intro: "Ob Sie eine Premium-Immobilie erwerben, Ihre aktuelle Residenz verkaufen oder Investitionsmöglichkeiten besprechen möchten — unser Team steht Ihnen zur Verfügung.",
+    intro: "Ob Sie eine Premium-Immobilie erwerben, Ihre aktuelle Residenz verkaufen oder Investitionsmöglichkeiten besprechen möchten, unser Team steht Ihnen zur Verfügung.",
     headOffice: "Hauptsitz",
     phone: "Telefon",
     email: "E-Mail",
@@ -1348,7 +1360,148 @@ const notFound: Tri<Record<string, string>> = {
 };
 
 // ---------------------------------------------------------------------------
-// Section registry — add new page/component sections here as they are authored.
+// SEO metadata. Titles & descriptions are intentionally keyword-rich for the
+// Kosovo market (Albanian is the primary, highest-traffic language): e.g.
+// "patundshmëri në Kosovë / Prishtinë", "banesa me qera", "banesa në shitje".
+// {var} placeholders are filled at render time from the property/page data.
+// ---------------------------------------------------------------------------
+const seo: Tri<Record<string, string>> = {
+  en: {
+    homeTitle: "Real Estate in Kosovo & Prishtina — Apartments, Houses & Land",
+    homeDescription:
+      "MADEM Real Estate is a leading property agency in Prishtina and Kosovo. Apartments for rent and for sale, houses, villas, commercial units and land. Find your next property with MADEM.",
+    homeKeywords:
+      "real estate Kosovo, real estate Prishtina, apartments for rent Prishtina, apartments for sale, houses for sale Kosovo, commercial space for rent, land for sale, property Kosovo, MADEM Real Estate",
+
+    propertiesTitle: "Properties for Sale & for Rent in Kosovo",
+    propertiesDescription:
+      "Browse apartments, houses, villas, commercial units and land for sale or for rent in Prishtina and across Kosovo. Filter by price, location, type and rooms.",
+    propertiesKeywords:
+      "properties Kosovo, apartments for rent Prishtina, apartments for sale Prishtina, houses for sale, land for sale Kosovo, commercial for rent",
+
+    aboutTitle: "About MADEM Real Estate — Property Experts in Prishtina",
+    aboutDescription:
+      "Meet MADEM Real Estate, your trusted property partner in Prishtina and Kosovo for apartments, houses, commercial units and land — for sale and for rent.",
+
+    contactTitle: "Contact MADEM Real Estate — Prishtina, Kosovo",
+    contactDescription:
+      "Get in touch with MADEM Real Estate in Prishtina. Talk to our agents about apartments for rent or for sale, houses, commercial units and land across Kosovo.",
+
+    favoritesTitle: "Saved Properties",
+    favoritesDescription:
+      "Your saved apartments, houses and land from MADEM Real Estate in Kosovo.",
+
+    blogTitle: "Real Estate News & Guides — Kosovo Property Market",
+    blogDescription:
+      "Insights, guides and news on the Kosovo and Prishtina real estate market from MADEM Real Estate.",
+
+    faqTitle: "Frequently Asked Questions — MADEM Real Estate",
+    faqDescription:
+      "Answers about buying, selling and renting property in Prishtina and Kosovo with MADEM Real Estate.",
+
+    offerTitle: "List Your Property — Sell or Rent with MADEM",
+    offerDescription:
+      "List your apartment, house, commercial unit or land for sale or rent in Kosovo with MADEM Real Estate. Reach serious buyers and tenants in Prishtina.",
+
+    // {type} {status} {city} → e.g. "Apartment for Rent in Prishtina"
+    propertyTitle: "{title} — {type} {status} in {city}",
+    // {type} {status} {city} {price} → keyword-led description
+    propertyDescription:
+      "{type} {status} in {neighborhood}, {city} — {area} m², {price}. View photos, details and location, and contact MADEM Real Estate.",
+    // Connectors used to build property titles/descriptions
+    forSale: "for sale",
+    forRent: "for rent",
+  },
+  sq: {
+    homeTitle: "Patundshmëri në Kosovë & Prishtinë — Banesa, Shtëpi & Toka",
+    homeDescription:
+      "MADEM Real Estate — agjenci kryesore e patundshmërive në Prishtinë dhe Kosovë. Banesa me qera dhe në shitje, shtëpi, vila, lokale dhe toka. Gjeni pronën tuaj të radhës me MADEM.",
+    homeKeywords:
+      "patundshmëri në Kosovë, patundshmëri Prishtinë, banesa me qera, banesa me qera Prishtinë, banesa në shitje, shtëpi në shitje, lokale me qera, toka në shitje, prona në Kosovë, MADEM Real Estate",
+
+    propertiesTitle: "Patundshmëri në Shitje & me Qera në Kosovë",
+    propertiesDescription:
+      "Shfletoni banesa, shtëpi, vila, lokale dhe toka në shitje ose me qera në Prishtinë dhe mbarë Kosovën. Filtroni sipas çmimit, lokacionit, llojit dhe numrit të dhomave.",
+    propertiesKeywords:
+      "patundshmëri Kosovë, banesa me qera Prishtinë, banesa në shitje Prishtinë, shtëpi në shitje, toka në shitje Kosovë, lokale me qera",
+
+    aboutTitle: "Rreth MADEM Real Estate — Ekspertë të Patundshmërive në Prishtinë",
+    aboutDescription:
+      "Njihuni me MADEM Real Estate, partneri juaj i besueshëm i patundshmërive në Prishtinë dhe Kosovë për banesa, shtëpi, lokale dhe toka — në shitje dhe me qera.",
+
+    contactTitle: "Kontakti — MADEM Real Estate, Prishtinë",
+    contactDescription:
+      "Na kontaktoni në MADEM Real Estate në Prishtinë. Bisedoni me agjentët tanë për banesa me qera ose në shitje, shtëpi, lokale dhe toka në mbarë Kosovën.",
+
+    favoritesTitle: "Pronat e Ruajtura",
+    favoritesDescription:
+      "Banesat, shtëpitë dhe tokat tuaja të ruajtura nga MADEM Real Estate në Kosovë.",
+
+    blogTitle: "Lajme & Udhëzues për Patundshmëri — Tregu në Kosovë",
+    blogDescription:
+      "Këshilla, udhëzues dhe lajme për tregun e patundshmërive në Kosovë dhe Prishtinë nga MADEM Real Estate.",
+
+    faqTitle: "Pyetjet e Shpeshta — MADEM Real Estate",
+    faqDescription:
+      "Përgjigje për blerjen, shitjen dhe marrjen me qera të pronave në Prishtinë dhe Kosovë me MADEM Real Estate.",
+
+    offerTitle: "Listo Pronën Tënde — Shit ose Jep me Qera me MADEM",
+    offerDescription:
+      "Listoni banesën, shtëpinë, lokalin ose tokën tuaj në shitje ose me qera në Kosovë me MADEM Real Estate. Arrini blerës dhe qiramarrës seriozë në Prishtinë.",
+
+    propertyTitle: "{title} — {type} {status} në {city}",
+    propertyDescription:
+      "{type} {status} në {neighborhood}, {city} — {area} m², {price}. Shihni fotot, detajet dhe lokacionin, dhe kontaktoni MADEM Real Estate.",
+    forSale: "në shitje",
+    forRent: "me qera",
+  },
+  de: {
+    homeTitle: "Immobilien im Kosovo & Prishtina — Wohnungen, Häuser & Grundstücke",
+    homeDescription:
+      "MADEM Real Estate ist eine führende Immobilienagentur in Prishtina und im Kosovo. Wohnungen zur Miete und zum Verkauf, Häuser, Villen, Gewerbeflächen und Grundstücke. Finden Sie Ihre nächste Immobilie mit MADEM.",
+    homeKeywords:
+      "Immobilien Kosovo, Immobilien Prishtina, Wohnungen mieten Prishtina, Wohnungen kaufen, Häuser kaufen Kosovo, Gewerbe mieten, Grundstück kaufen, MADEM Real Estate",
+
+    propertiesTitle: "Immobilien zum Verkauf & zur Miete im Kosovo",
+    propertiesDescription:
+      "Durchsuchen Sie Wohnungen, Häuser, Villen, Gewerbeflächen und Grundstücke zum Verkauf oder zur Miete in Prishtina und im ganzen Kosovo. Filtern Sie nach Preis, Lage, Typ und Zimmern.",
+    propertiesKeywords:
+      "Immobilien Kosovo, Wohnungen mieten Prishtina, Wohnungen kaufen Prishtina, Häuser kaufen, Grundstück kaufen Kosovo, Gewerbe mieten",
+
+    aboutTitle: "Über MADEM Real Estate — Immobilienexperten in Prishtina",
+    aboutDescription:
+      "Lernen Sie MADEM Real Estate kennen, Ihren vertrauenswürdigen Immobilienpartner in Prishtina und im Kosovo für Wohnungen, Häuser, Gewerbe und Grundstücke — zum Verkauf und zur Miete.",
+
+    contactTitle: "Kontakt — MADEM Real Estate, Prishtina",
+    contactDescription:
+      "Kontaktieren Sie MADEM Real Estate in Prishtina. Sprechen Sie mit unseren Maklern über Wohnungen zur Miete oder zum Verkauf, Häuser, Gewerbe und Grundstücke im Kosovo.",
+
+    favoritesTitle: "Gespeicherte Immobilien",
+    favoritesDescription:
+      "Ihre gespeicherten Wohnungen, Häuser und Grundstücke von MADEM Real Estate im Kosovo.",
+
+    blogTitle: "Immobilien-News & Ratgeber — Markt im Kosovo",
+    blogDescription:
+      "Einblicke, Ratgeber und Neuigkeiten zum Immobilienmarkt im Kosovo und in Prishtina von MADEM Real Estate.",
+
+    faqTitle: "Häufige Fragen — MADEM Real Estate",
+    faqDescription:
+      "Antworten zum Kauf, Verkauf und zur Miete von Immobilien in Prishtina und im Kosovo mit MADEM Real Estate.",
+
+    offerTitle: "Immobilie inserieren — Verkaufen oder Vermieten mit MADEM",
+    offerDescription:
+      "Inserieren Sie Ihre Wohnung, Ihr Haus, Ihre Gewerbefläche oder Ihr Grundstück zum Verkauf oder zur Miete im Kosovo mit MADEM Real Estate.",
+
+    propertyTitle: "{title} — {type} {status} in {city}",
+    propertyDescription:
+      "{type} {status} in {neighborhood}, {city} — {area} m², {price}. Sehen Sie Fotos, Details und Lage und kontaktieren Sie MADEM Real Estate.",
+    forSale: "zum Verkauf",
+    forRent: "zur Miete",
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Section registry. Add new page/component sections here as they are authored.
 // ---------------------------------------------------------------------------
 const sections: Record<string, Tri<unknown>> = {
   nav,
@@ -1378,6 +1531,7 @@ const sections: Record<string, Tri<unknown>> = {
   faqPage,
   blog,
   notFound,
+  seo,
 };
 
 function build(lang: Language): Record<string, unknown> {

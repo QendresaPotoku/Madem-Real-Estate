@@ -5,6 +5,7 @@ import { blogPosts } from "@/data/blog";
 import { Link } from "wouter";
 import { ArrowRight, Calendar } from "lucide-react";
 import { useT } from "@/i18n/useT";
+import { Seo } from "@/components/Seo";
 
 export default function BlogPage() {
   const { t, tx, tEnum, locale } = useT();
@@ -22,16 +23,21 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-20">
+      <Seo
+        title={t("seo.blogTitle")}
+        description={t("seo.blogDescription")}
+        path="/blog"
+      />
       <Header />
       
       <div className="bg-[#0B3A36] py-16 text-white text-center">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">{t("blog.title")}</h1>
           <p className="text-gray-300 max-w-2xl mx-auto">{t("blog.subtitle")}</p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 flex-grow">
+      <div className="container mx-auto py-16 flex-grow">
         
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-2 mb-16 border-b border-gray-200 pb-6">

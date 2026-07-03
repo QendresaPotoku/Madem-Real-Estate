@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 /**
  * Expiry reminders for listing agreements. Mirrors contract_reminders but keyed
  * to listing_agreements. Reuses the existing reminder_type / reminder_status PG
- * enums and the shared set_updated_at() trigger fn — no new enums needed.
+ * enums and the shared set_updated_at() trigger fn - no new enums needed.
  */
 export class AddAgreementReminders1710000003000 implements MigrationInterface {
   name = 'AddAgreementReminders1710000003000';

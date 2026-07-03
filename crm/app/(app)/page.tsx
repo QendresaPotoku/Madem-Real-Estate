@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
   if (isLoading || !data) {
     return (
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         <h1 className="mb-1 text-2xl font-semibold text-brand">Dashboard</h1>
         <p className="text-sm text-gray-400">Loading…</p>
       </div>
@@ -77,7 +77,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <h1 className="mb-1 text-2xl font-semibold text-brand">Dashboard</h1>
       <p className="mb-6 text-sm text-gray-500">What needs your attention today</p>
 
@@ -220,7 +220,7 @@ export default function DashboardPage() {
                   <AttnItem
                     key={d.id}
                     onClick={() => router.push(`/deals?dealId=${d.id}`)}
-                    left={`${d.code}${d.propertyCode ? ` - ${d.propertyCode}` : ''}`}
+                    left={`${d.code}${d.propertyCode ? ` · ${d.propertyCode}` : ''}`}
                     right={(d.mademCommissionValue ?? 0).toLocaleString(undefined, { style: 'currency', currency: 'EUR' })}
                   />
                 )}
@@ -232,7 +232,7 @@ export default function DashboardPage() {
               data.viewings.today === 0 &&
               data.contracts.expiringSoon === 0 &&
               unpaidCommissions.count === 0 &&
-              unread === 0 && <p className="text-sm text-gray-400">All caught up — nothing needs attention.</p>}
+              unread === 0 && <p className="text-sm text-gray-400">All caught up. Nothing needs attention.</p>}
           </div>
         </Card>
 

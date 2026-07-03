@@ -7,10 +7,9 @@ import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tansta
 import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Plus, Trash2 } from 'lucide-react';
 import { api, req } from '@/lib/api';
 import { toast } from '@/lib/toast';
-import { Button, Input, Modal, PageHeader, Select, StatusBadge, Table } from '@/components/ui';
+import { Button, Input, Modal, PageHeader, Select, Table } from '@/components/ui';
 import { ContactModal } from '@/components/contact-modal';
 
-const CONTACT_TYPES = ['', 'OWNER', 'BUYER', 'TENANT', 'LANDLORD', 'INVESTOR'] as const;
 const SOURCES = ['', 'WEBSITE', 'REFERRAL', 'WALK_IN', 'PHONE', 'SOCIAL', 'OTHER'] as const;
 const PAGE_SIZE = 20;
 
@@ -18,7 +17,6 @@ type Row = {
   id: string;
   code: string;
   fullName: string;
-  contactType: string;
   source: string;
   phone: string | null;
   email: string | null;
@@ -44,12 +42,11 @@ function ContactsInner() {
 
   // URL is the source of truth for filters/sort/page, so views are shareable.
   const search = sp.get('search') ?? '';
-  const contactType = sp.get('contactType') ?? '';
   const source = sp.get('source') ?? '';
   const sort = sp.get('sort') ?? '';
   const order = (sp.get('order') as 'ASC' | 'DESC') ?? 'ASC';
   const page = Math.max(1, Number(sp.get('page') ?? '1') || 1);
-  const anyFilter = !!(search || contactType || source);
+  const anyFilter = !!(search || source);
 
   function setParams(patch: Record<string, string | number | undefined>) {
     const next = new URLSearchParams(sp.toString());
@@ -82,7 +79,7 @@ function ContactsInner() {
   }
 
   const { data, isFetching } = useQuery({
-    queryKey: ['contacts', { search, contactType, source, sort, order, page }],
+    queryKey: ['contacts', { search, source, sort, order, page }],
     placeholderData: keepPreviousData,
     queryFn: async () =>
       (
@@ -92,7 +89,6 @@ function ContactsInner() {
               page,
               limit: PAGE_SIZE,
               ...(search ? { search } : {}),
-              ...(contactType ? { contactType: contactType as 'OWNER' } : {}),
               ...(source ? { source: source as 'WEBSITE' } : {}),
               ...(sort ? { sort, order } : {}),
             },
@@ -125,7 +121,7 @@ function ContactsInner() {
   const totalPages = data?.meta.totalPages ?? 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Contacts"
         subtitle={`${data?.meta.total ?? 0} people`}
@@ -143,13 +139,6 @@ function ContactsInner() {
           onChange={(e) => setSearchInput(e.target.value)}
           className="w-72"
         />
-        <Select value={contactType} onChange={(e) => setParams({ contactType: e.target.value })} className="w-44">
-          {CONTACT_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t ? typeLabel(t) : 'All types'}
-            </option>
-          ))}
-        </Select>
         <Select value={source} onChange={(e) => setParams({ source: e.target.value })} className="w-44">
           {SOURCES.map((s) => (
             <option key={s} value={s}>
@@ -173,7 +162,6 @@ function ContactsInner() {
             <th className="px-4 py-3">
               <SortHeader label="Name" col="fullName" sort={sort} order={order} onSort={toggleSort} />
             </th>
-            <th className="px-4 py-3">Type</th>
             <th className="px-4 py-3">Source</th>
             <th className="px-4 py-3">Phone</th>
             <th className="px-4 py-3">Email</th>
@@ -194,9 +182,6 @@ function ContactsInner() {
                 {c.fullName}
               </Link>
             </td>
-            <td className="px-4 py-3">
-              <StatusBadge value={c.contactType} />
-            </td>
             <td className="px-4 py-3 text-gray-600">
               <div className="flex items-center gap-2">
                 {typeLabel(c.source)}
@@ -204,7 +189,7 @@ function ContactsInner() {
                   <Link
                     href={`/contacts/${c.id}`}
                     className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700 hover:bg-green-200"
-                    title="Submitted a property request — has a linked opportunity"
+                    title="Submitted a property request, has a linked opportunity"
                   >
                     Request{(c.opportunityCount ?? 0) > 1 ? ` ×${c.opportunityCount}` : ''}
                   </Link>
@@ -217,7 +202,7 @@ function ContactsInner() {
                   {c.phone}
                 </a>
               ) : (
-                '—'
+                '-'
               )}
             </td>
             <td className="px-4 py-3 text-gray-600">
@@ -226,10 +211,10 @@ function ContactsInner() {
                   {c.email}
                 </a>
               ) : (
-                '—'
+                '-'
               )}
             </td>
-            <td className="px-4 py-3 text-gray-600">{c.idNumber || '—'}</td>
+            <td className="px-4 py-3 text-gray-600">{c.idNumber || '-'}</td>
             <td className="px-4 py-3">
               <div className="flex justify-end gap-1">
                 <button
@@ -255,7 +240,7 @@ function ContactsInner() {
         ))}
         {!data?.data.length && (
           <tr>
-            <td colSpan={8} className="px-4 py-12 text-center text-sm text-gray-400">
+            <td colSpan={7} className="px-4 py-12 text-center text-sm text-gray-400">
               {isFetching ? (
                 'Loading…'
               ) : anyFilter ? (

@@ -7,11 +7,12 @@ import { InitialSchema1710000000000 } from './migrations/1710000000000-InitialSc
 import { DropActivityEntityCheck1710000001000 } from './migrations/1710000001000-DropActivityEntityCheck';
 import { AddNotifications1710000002000 } from './migrations/1710000002000-AddNotifications';
 import { AddAgreementReminders1710000003000 } from './migrations/1710000003000-AddAgreementReminders';
-import { AddDealMademCommissionValue1710000004000 } from './migrations/1710000004000-AddDealMademCommissionValue';
-import { AddDealCommissionPaid1710000005000 } from './migrations/1710000005000-AddDealCommissionPaid';
 import { AddLocationLookups1710000006000 } from './migrations/1710000006000-AddLocationLookups';
 import { RemoveOpportunityMatchingStatus1710000007000 } from './migrations/1710000007000-RemoveOpportunityMatchingStatus';
 import { AddContactIdNumber1710000008000 } from './migrations/1710000008000-AddContactIdNumber';
+import { AddDealRentExpiry1710000009000 } from './migrations/1710000009000-AddDealRentExpiry';
+import { AddPropertyVideos1710000010000 } from './migrations/1710000010000-AddPropertyVideos';
+import { RemoveContactType1710000011000 } from './migrations/1710000011000-RemoveContactType';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -22,11 +23,12 @@ export const AppDataSource = new DataSource({
     DropActivityEntityCheck1710000001000,
     AddNotifications1710000002000,
     AddAgreementReminders1710000003000,
-    AddDealMademCommissionValue1710000004000,
-    AddDealCommissionPaid1710000005000,
     AddLocationLookups1710000006000,
     RemoveOpportunityMatchingStatus1710000007000,
     AddContactIdNumber1710000008000,
+    AddDealRentExpiry1710000009000,
+    AddPropertyVideos1710000010000,
+    RemoveContactType1710000011000,
   ],
   namingStrategy: new SnakeNamingStrategy(),
   synchronize: false,

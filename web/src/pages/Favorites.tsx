@@ -7,6 +7,7 @@ import { HeartCrack } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useT } from "@/i18n/useT";
+import { Seo } from "@/components/Seo";
 
 export default function FavoritesPage() {
   const { t } = useT();
@@ -16,16 +17,22 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-20">
+      <Seo
+        title={t("seo.favoritesTitle")}
+        description={t("seo.favoritesDescription")}
+        path="/favorites"
+        noindex
+      />
       <Header />
       
       <div className="bg-[#0B3A36] py-12 text-white border-t border-[#F3D8A5]/10">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">{t("favorites.title")}</h1>
           <p className="text-gray-300 max-w-2xl">{t("favorites.subtitle")}</p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 flex-grow">
+      <div className="container mx-auto py-16 flex-grow">
         {favoriteProperties.length > 0 ? (
           <div>
             <div className="mb-8">

@@ -1,12 +1,12 @@
 import { Link } from "wouter";
-import { Facebook, Instagram, Linkedin, MapPin, Phone, Mail } from "lucide-react";
+import { Facebook, Instagram, MapPin, Phone, Mail } from "lucide-react";
 import { useT } from "@/i18n/useT";
 
 export function Footer() {
   const { t } = useT();
   return (
     <footer className="bg-[#072D2A] text-white pt-20 pb-10 border-t border-[#F3D8A5]/10">
-      <div className="container mx-auto px-4 lg:px-8">
+      <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
           {/* Brand Col */}
           <div>
@@ -17,14 +17,11 @@ export function Footer() {
               {t("footer.description")}
             </p>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-[#0B3A36] flex items-center justify-center text-[#F3D8A5] hover:bg-[#F3D8A5] hover:text-[#0B3A36] transition-colors">
+              <a href="https://www.facebook.com/share/1BKa8D4Y2z/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full bg-[#0B3A36] flex items-center justify-center text-[#F3D8A5] hover:bg-[#F3D8A5] hover:text-[#0B3A36] transition-colors">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-[#0B3A36] flex items-center justify-center text-[#F3D8A5] hover:bg-[#F3D8A5] hover:text-[#0B3A36] transition-colors">
+              <a href="https://www.instagram.com/madem.realestate?igsh=MTh5cjd6eDhwb2FwaQ==" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full bg-[#0B3A36] flex items-center justify-center text-[#F3D8A5] hover:bg-[#F3D8A5] hover:text-[#0B3A36] transition-colors">
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-[#0B3A36] flex items-center justify-center text-[#F3D8A5] hover:bg-[#F3D8A5] hover:text-[#0B3A36] transition-colors">
-                <Linkedin className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -35,9 +32,7 @@ export function Footer() {
             <ul className="space-y-4 text-sm text-gray-300">
               <li><Link href="/properties" className="hover:text-white transition-colors">{t("footer.allProperties")}</Link></li>
               <li><Link href="/about" className="hover:text-white transition-colors">{t("footer.ourAgency")}</Link></li>
-              <li><Link href="/favorites" className="hover:text-white transition-colors">{t("footer.favorites")}</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-colors">{t("footer.realEstateBlog")}</Link></li>
-              <li><Link href="/faq" className="hover:text-white transition-colors">{t("footer.faq")}</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">{t("nav.contact")}</Link></li>
             </ul>
           </div>
 
@@ -47,15 +42,25 @@ export function Footer() {
             <ul className="space-y-4 text-sm text-gray-300">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#F3D8A5] shrink-0 mt-0.5" />
-                <span>Mother Teresa Blvd, No. 45<br/>10000 Prishtine, Kosovo</span>
+                <a
+                  href="https://maps.app.goo.gl/utQYnAqoKoznnFAKA"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  Robert Doll 19 K-1 H-3 NR.4<br/>Prishtinë, Kosovo
+                </a>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-[#F3D8A5] shrink-0" />
-                <a href="tel:+38344123456" className="hover:text-white transition-colors">+383 44 123 456</a>
+              <li className="flex items-start gap-3">
+                <Phone className="w-5 h-5 text-[#F3D8A5] shrink-0 mt-0.5" />
+                <span>
+                  <a href="tel:+38349440015" className="hover:text-white transition-colors">+383 49 440 015</a> (Andi)<br/>
+                  <a href="tel:+38344505405" className="hover:text-white transition-colors">+383 44 505 405</a> (Emiri)
+                </span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-[#F3D8A5] shrink-0" />
-                <a href="mailto:info@madem.com" className="hover:text-white transition-colors">info@madem.com</a>
+                <a href="mailto:info@madem-ks.com" className="hover:text-white transition-colors">info@madem-ks.com</a>
               </li>
             </ul>
           </div>
@@ -63,11 +68,6 @@ export function Footer() {
 
         <div className="border-t border-[#0B3A36] pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} MADEM Real Estate. {t("footer.rights")}</p>
-          <div className="flex gap-6">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">{t("footer.privacy")}</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">{t("footer.terms")}</Link>
-            <Link href="/cookie-policy" className="hover:text-white transition-colors">{t("footer.cookies")}</Link>
-          </div>
         </div>
       </div>
     </footer>

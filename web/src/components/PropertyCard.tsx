@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Property } from "@/data/properties";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Link } from "wouter";
@@ -15,10 +15,49 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { t, tx, tEnum } = useT();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [inViewPlaying, setInViewPlaying] = useState(false);
   const favorite = isFavorite(property.id);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const playVideo = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = 0;
+    void v.play().catch(() => {});
+  };
+  const stopVideo = () => {
+    videoRef.current?.pause();
+  };
+
+  // On touch devices there is no hover, so autoplay the preview (muted) while the
+  // card is on screen, like a social feed, and pause it once it scrolls away.
+  useEffect(() => {
+    if (!property.videoUrl) return;
+    if (typeof window === "undefined" || !window.matchMedia("(hover: none)").matches) return;
+    const el = cardRef.current;
+    const v = videoRef.current;
+    if (!el || !v) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        const visible = entry.isIntersecting && entry.intersectionRatio >= 0.6;
+        setInViewPlaying(visible);
+        if (visible) void v.play().catch(() => {});
+        else v.pause();
+      },
+      { threshold: [0, 0.6, 1] },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [property.videoUrl]);
 
   return (
-    <div className="group flex flex-col bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+    <div
+      ref={cardRef}
+      className="group flex flex-col bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+      onMouseEnter={property.videoUrl ? playVideo : undefined}
+      onMouseLeave={property.videoUrl ? stopVideo : undefined}
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
         <Link href={`/properties/${property.id}`} className="block w-full h-full">
           <img
@@ -27,6 +66,22 @@ export function PropertyCard({ property }: PropertyCardProps) {
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             loading="lazy"
           />
+          {property.videoUrl && (
+            <video
+              ref={videoRef}
+              src={property.videoUrl}
+              poster={property.images[0]}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-100 pointer-events-none ${
+                inViewPlaying ? "opacity-100" : "opacity-0"
+              }`}
+              muted
+              loop
+              playsInline
+              // Warm the connection + fetch the (faststart) metadata header up front
+              // so hover playback starts quickly instead of cold-loading on hover.
+              preload="metadata"
+            />
+          )}
         </Link>
         <div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-2">
           <div className="flex flex-wrap gap-2">

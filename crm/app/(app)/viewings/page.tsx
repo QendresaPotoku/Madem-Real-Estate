@@ -48,9 +48,9 @@ function ViewingsInner() {
     const p = props.data?.find((x) => x.id === id);
     return p ? `${p.propertyCode} · ${tx(p.titleJson)}` : id.slice(0, 8);
   };
-  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '—' : '—');
-  const contactName = (id: string | null) => (id ? contacts.data?.find((c) => c.id === id)?.fullName ?? '—' : '—');
-  const oppCode = (id: string | null) => (id ? opps.data?.find((o) => o.id === id)?.code ?? '—' : '—');
+  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '-' : '-');
+  const contactName = (id: string | null) => (id ? contacts.data?.find((c) => c.id === id)?.fullName ?? '-' : '-');
+  const oppCode = (id: string | null) => (id ? opps.data?.find((o) => o.id === id)?.code ?? '-' : '-');
 
   // URL is the source of truth for filters/sort/page, so views are shareable.
   const status = sp.get('status') ?? '';
@@ -121,7 +121,7 @@ function ViewingsInner() {
   const totalPages = data?.meta.totalPages ?? 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Viewings"
         subtitle={`${data?.meta.total ?? 0} scheduled visits`}
@@ -193,7 +193,7 @@ function ViewingsInner() {
               </Select>
             </td>
             <td className="max-w-48 truncate px-4 py-3 text-gray-500" title={v.feedback ?? ''}>
-              {v.feedback ?? '—'}
+              {v.feedback ?? '-'}
             </td>
             <td className="px-4 py-3">
               <div className="flex justify-end gap-1">
@@ -354,10 +354,10 @@ function ViewingModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose:
             ))}
           </Select>
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Opportunity (optional)">
             <Select value={f.opportunityId} onChange={(e) => set('opportunityId', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {opps.data?.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.code}
@@ -367,7 +367,7 @@ function ViewingModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose:
           </Field>
           <Field label="Attendee (optional)">
             <Select value={f.contactId} onChange={(e) => set('contactId', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {contacts.data?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.fullName}
@@ -376,10 +376,10 @@ function ViewingModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose:
             </Select>
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Agent (optional)">
             <Select value={f.agentUserId} onChange={(e) => set('agentUserId', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {agents.data?.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.fullName}

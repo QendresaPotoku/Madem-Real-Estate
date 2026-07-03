@@ -8,7 +8,9 @@ import { api, tx } from '@/lib/api';
 import { Button, Card, Modal, StatusBadge } from '@/components/ui';
 import { PropertyForm, fromProperty, toPropertyBody, type PropertyFormValues } from '@/components/property-form';
 import { ImageManager } from '@/components/image-manager';
+import { VideoManager } from '@/components/video-manager';
 import { DocumentManager } from '@/components/document-manager';
+import { PropertyMatches } from '@/components/property-matches';
 
 const STATUS_STYLES: Record<string, string> = {
   ACTIVE: 'bg-green-100 text-green-700',
@@ -44,7 +46,7 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
   if (!p) return <div className="p-8 text-sm text-gray-400">Loading…</div>;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <Link href="/properties" className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand">
         <ArrowLeft className="h-4 w-4" /> Properties
       </Link>
@@ -67,7 +69,9 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <ImageManager propertyId={id} />
+          <VideoManager propertyId={id} />
           <DocumentManager propertyId={id} />
+          <PropertyMatches propertyId={id} propertyCode={p.propertyCode} propertyTitle={tx(p.titleJson)} />
         </div>
 
         <Card className="h-fit p-5">
@@ -75,20 +79,20 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
           <dl className="space-y-2.5 text-sm">
             <Row label="Price" value={`${p.price.toLocaleString()} ${p.currency}`} />
             <Row label="Location" value={`${p.city}${p.area ? `, ${p.area}` : ''}`} />
-            <Row label="Country" value={p.country ?? '—'} />
+            <Row label="Country" value={p.country ?? '-'} />
             {p.address && <Row label="Address" value={p.address} />}
             {p.cadastralZone && <Row label="Cadastral zone" value={p.cadastralZone} />}
             {(p.latitude != null || p.longitude != null) && (
-              <Row label="Geo" value={`${p.latitude ?? '—'}, ${p.longitude ?? '—'}`} />
+              <Row label="Geo" value={`${p.latitude ?? '-'}, ${p.longitude ?? '-'}`} />
             )}
-            <Row label="Bedrooms" value={p.bedrooms ?? '—'} />
-            <Row label="Bathrooms" value={p.bathrooms ?? '—'} />
+            <Row label="Bedrooms" value={p.bedrooms ?? '-'} />
+            <Row label="Bathrooms" value={p.bathrooms ?? '-'} />
             {p.toilets != null && <Row label="Toilets" value={p.toilets} />}
-            <Row label="Size" value={p.sizeM2 ? `${p.sizeM2} m²` : '—'} />
+            <Row label="Size" value={p.sizeM2 ? `${p.sizeM2} m²` : '-'} />
             {p.lotSizeM2 != null && <Row label="Lot size" value={`${p.lotSizeM2} m²`} />}
             {p.terraceM2 != null && <Row label="Terrace" value={`${p.terraceM2} m²`} />}
             {p.basementM2 != null && <Row label="Basement" value={`${p.basementM2} m²`} />}
-            <Row label="Floor" value={p.floor ?? '—'} />
+            <Row label="Floor" value={p.floor ?? '-'} />
             {p.garage != null && <Row label="Garage" value={p.garage} />}
             {p.balconies != null && <Row label="Balconies" value={p.balconies} />}
             {p.orientation && <Row label="Orientation" value={p.orientation} />}
@@ -138,7 +142,7 @@ function attrLabel(key: string) {
 /** Render an attributes_json value for display. */
 function attrValue(val: unknown): React.ReactNode {
   if (typeof val === 'boolean') return val ? 'Yes' : 'No';
-  if (val === null || val === undefined) return '—';
+  if (val === null || val === undefined) return '-';
   return String(val);
 }
 

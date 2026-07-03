@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ImagePlus, Star, Trash2 } from 'lucide-react';
+import { ImagePlus, Star, Trash2, Video } from 'lucide-react';
 import { Button, Field, Input, Select, Textarea } from '@/components/ui';
 import { ImageManager } from '@/components/image-manager';
+import { VideoManager } from '@/components/video-manager';
 import { ContactModal, type ContactModalBody } from '@/components/contact-modal';
 import { api, req } from '@/lib/api';
-import { toast } from '@/lib/toast';
+import { errorMessage, toast } from '@/lib/toast';
 import { useAgents, useContacts, useHeatingTypes, useLocationLookups } from '@/lib/queries';
 
 const LISTING_TYPES = ['SALE', 'RENT'] as const;
@@ -180,8 +181,12 @@ export function toPropertyBody(v: PropertyFormValues) {
     listingType: v.listingType as 'SALE',
     propertyType: v.propertyType as 'APARTMENT',
     status: v.status as 'DRAFT',
-    titleJson: { en: v.titleEn, sq: v.titleSq || v.titleEn, de: v.titleDe || v.titleEn },
-    descriptionJson: v.descEn || v.descSq || v.descDe ? { en: v.descEn, sq: v.descSq, de: v.descDe } : undefined,
+    // Shqip is the primary input; en/de fall back to it if left untranslated.
+    titleJson: { sq: v.titleSq, en: v.titleEn || v.titleSq, de: v.titleDe || v.titleSq },
+    descriptionJson:
+      v.descSq || v.descEn || v.descDe
+        ? { sq: v.descSq, en: v.descEn || v.descSq, de: v.descDe || v.descSq }
+        : undefined,
     price: Number(v.price),
     currency: v.currency,
     country: v.country,
@@ -301,7 +306,7 @@ export function PropertyForm({
   propertyId,
 }: {
   initial?: Partial<PropertyFormValues>;
-  onSubmit: (v: PropertyFormValues, images: File[]) => void;
+  onSubmit: (v: PropertyFormValues, images: File[], videos: File[]) => void;
   onCancel: () => void;
   pending: boolean;
   submitLabel?: string;
@@ -313,8 +318,37 @@ export function PropertyForm({
   const [v, setV] = useState<PropertyFormValues>({ ...EMPTY, ...initial, attributes: { ...EMPTY.attributes, ...initial?.attributes } });
   const set = <K extends keyof PropertyFormValues>(k: K, val: PropertyFormValues[K]) => setV((s) => ({ ...s, [k]: val }));
   const setAttr = (k: string, val: string | boolean) => setV((s) => ({ ...s, attributes: { ...s.attributes, [k]: val } }));
+  const [translating, setTranslating] = useState(false);
+
+  /** Generate English + German title/description from the Albanian input via Gemini. */
+  async function handleTranslate() {
+    if (!v.titleSq.trim()) {
+      toast.error('Enter the Albanian title first.');
+      return;
+    }
+    setTranslating(true);
+    try {
+      const out = await req(
+        api.POST('/api/translate/property-content', {
+          body: { title: v.titleSq, description: v.descSq || undefined },
+        }),
+      );
+      setV((s) => ({
+        ...s,
+        titleEn: out.title.en,
+        titleDe: out.title.de,
+        descEn: out.description.en,
+        descDe: out.description.de,
+      }));
+      toast.success('Translated to English and German.');
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setTranslating(false);
+    }
+  }
   const agents = useAgents();
-  const owners = useContacts('OWNER');
+  const owners = useContacts();
   const heating = useHeatingTypes();
   const locations = useLocationLookups();
 
@@ -336,7 +370,7 @@ export function PropertyForm({
   const lastStep = enableImages ? 3 : 2;
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
-  // Photos staged locally — uploaded by the caller after the property is created.
+  // Photos staged locally - uploaded by the caller after the property is created.
   const [images, setImages] = useState<StagedImage[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const addFiles = (files: FileList | null) => {
@@ -355,6 +389,24 @@ export function PropertyForm({
   const makeCover = (i: number) => setImages((s) => (i === 0 ? s : [s[i], ...s.filter((_, j) => j !== i)]));
   // Revoke any remaining preview URLs when the form unmounts.
   useEffect(() => () => setImages((s) => (s.forEach((img) => URL.revokeObjectURL(img.url)), s)), []);
+
+  // Videos staged locally - uploaded by the caller after the property is created.
+  const [videos, setVideos] = useState<StagedImage[]>([]);
+  const videoFileRef = useRef<HTMLInputElement>(null);
+  const addVideoFiles = (files: FileList | null) => {
+    if (!files?.length) return;
+    const next = Array.from(files)
+      .filter((f) => f.type.startsWith('video/'))
+      .map((file) => ({ file, url: URL.createObjectURL(file) }));
+    setVideos((s) => [...s, ...next]);
+    if (videoFileRef.current) videoFileRef.current.value = '';
+  };
+  const removeVideo = (i: number) =>
+    setVideos((s) => {
+      URL.revokeObjectURL(s[i].url);
+      return s.filter((_, j) => j !== i);
+    });
+  useEffect(() => () => setVideos((s) => (s.forEach((vid) => URL.revokeObjectURL(vid.url)), s)), []);
   const country = locations.data?.countries.find((c) => c.name === v.country);
   const cities = locations.data?.cities.filter((c) => !country || c.countryId === country.id).map((c) => c.name) ?? [];
   const city = locations.data?.cities.find((c) => c.name === v.city && (!country || c.countryId === country.id));
@@ -370,7 +422,7 @@ export function PropertyForm({
           setStep((s) => (s + 1) as 1 | 2 | 3);
           return;
         }
-        onSubmit(v, images.map((img) => img.file));
+        onSubmit(v, images.map((img) => img.file), videos.map((vid) => vid.file));
       }}
       className="space-y-5"
     >
@@ -381,7 +433,7 @@ export function PropertyForm({
         {enableImages && (
           <>
             <span className="h-px flex-1 bg-gray-200" />
-            <span className={step === 3 ? 'text-brand' : 'text-gray-400'}>3 · Photos</span>
+            <span className={step === 3 ? 'text-brand' : 'text-gray-400'}>3 · Photos &amp; videos</span>
           </>
         )}
       </div>
@@ -392,7 +444,7 @@ export function PropertyForm({
       {step === 1 && (
       <div className="space-y-5">
       <SectionTitle>Basic Information</SectionTitle>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Listing">
           <Select value={v.listingType} onChange={(e) => set('listingType', e.target.value)}>
             {LISTING_TYPES.map((t) => (
@@ -416,30 +468,47 @@ export function PropertyForm({
         </Field>
       </div>
 
-      <div>
-        <p className="mb-1 text-sm font-medium text-gray-700">
-          Title <span className="text-red-500">*</span> <span className="font-normal text-gray-400">(en / sq / de)</span>
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <Input placeholder="English" value={v.titleEn} onChange={(e) => set('titleEn', e.target.value)} required />
-          <Input placeholder="Shqip" value={v.titleSq} onChange={(e) => set('titleSq', e.target.value)} />
-          <Input placeholder="Deutsch" value={v.titleDe} onChange={(e) => set('titleDe', e.target.value)} />
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-gray-700">
+            Title <span className="text-red-500">*</span> &amp; description{' '}
+            <span className="font-normal text-gray-400">- write in Shqip, then translate</span>
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={handleTranslate}
+            disabled={translating || !v.titleSq.trim()}
+          >
+            {translating ? 'Translating…' : 'Translate → EN / DE'}
+          </Button>
         </div>
-      </div>
 
-      <div>
-        <p className="mb-1 text-sm font-medium text-gray-700">
-          Description <span className="font-normal text-gray-400">(en / sq / de)</span>
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <Textarea placeholder="English" value={v.descEn} onChange={(e) => set('descEn', e.target.value)} />
-          <Textarea placeholder="Shqip" value={v.descSq} onChange={(e) => set('descSq', e.target.value)} />
-          <Textarea placeholder="Deutsch" value={v.descDe} onChange={(e) => set('descDe', e.target.value)} />
+        {/* Albanian - primary input */}
+        <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50/50 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Shqip</p>
+          <Input placeholder="Title (Shqip)" value={v.titleSq} onChange={(e) => set('titleSq', e.target.value)} required />
+          <Textarea placeholder="Description (Shqip)" value={v.descSq} onChange={(e) => set('descSq', e.target.value)} />
+        </div>
+
+        {/* Generated translations - editable */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">English</p>
+            <Input placeholder="Title (English)" value={v.titleEn} onChange={(e) => set('titleEn', e.target.value)} />
+            <Textarea placeholder="Description (English)" value={v.descEn} onChange={(e) => set('descEn', e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Deutsch</p>
+            <Input placeholder="Title (Deutsch)" value={v.titleDe} onChange={(e) => set('titleDe', e.target.value)} />
+            <Textarea placeholder="Description (Deutsch)" value={v.descDe} onChange={(e) => set('descDe', e.target.value)} />
+          </div>
         </div>
       </div>
 
       <SectionTitle>Pricing</SectionTitle>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Field label="Price" required>
           <Input type="number" value={v.price} onChange={(e) => set('price', e.target.value)} required />
         </Field>
@@ -452,7 +521,7 @@ export function PropertyForm({
       </div>
 
       <SectionTitle>Location</SectionTitle>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Field label="Country" required>
           <Select
             value={v.country}
@@ -503,7 +572,7 @@ export function PropertyForm({
           </Select>
         </Field>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Address">
           <Input value={v.address} onChange={(e) => set('address', e.target.value)} />
         </Field>
@@ -521,7 +590,7 @@ export function PropertyForm({
       {step === 2 && (
       <div className="space-y-5">
       <SectionTitle>Property Details</SectionTitle>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Field label="Bedrooms">
           <Input type="number" value={v.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} />
         </Field>
@@ -535,7 +604,7 @@ export function PropertyForm({
           <Input type="number" value={v.floor} onChange={(e) => set('floor', e.target.value)} />
         </Field>
       </div>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Field label="Size (m²)">
           <Input type="number" value={v.sizeM2} onChange={(e) => set('sizeM2', e.target.value)} />
         </Field>
@@ -549,7 +618,7 @@ export function PropertyForm({
           <Input type="number" value={v.basementM2} onChange={(e) => set('basementM2', e.target.value)} />
         </Field>
       </div>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Field label="Garage (spaces)">
           <Input type="number" value={v.garage} onChange={(e) => set('garage', e.target.value)} />
         </Field>
@@ -558,7 +627,7 @@ export function PropertyForm({
         </Field>
         <Field label="Orientation">
           <Select value={v.orientation} onChange={(e) => set('orientation', e.target.value)}>
-            <option value="">—</option>
+            <option value="">-</option>
             {ORIENTATIONS.map((o) => (
               <option key={o}>{o}</option>
             ))}
@@ -566,7 +635,7 @@ export function PropertyForm({
         </Field>
         <Field label="Building condition">
           <Select value={v.buildingCondition} onChange={(e) => set('buildingCondition', e.target.value)}>
-            <option value="">—</option>
+            <option value="">-</option>
             {BUILDING_CONDITIONS.map((c) => (
               <option key={c} value={c}>
                 {c === 'NEW_CONSTRUCTION' ? 'New construction' : 'Old construction'}
@@ -580,10 +649,10 @@ export function PropertyForm({
       </div>
 
       <SectionTitle>Features</SectionTitle>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Heating">
           <Select value={v.heatingTypeId} onChange={(e) => set('heatingTypeId', e.target.value)}>
-            <option value="">—</option>
+            <option value="">-</option>
             {heating.data?.map((h) => (
               <option key={h.id} value={h.id}>
                 {h.labelJson.en}
@@ -603,7 +672,7 @@ export function PropertyForm({
       {attrDefs.length > 0 && (
         <>
           <SectionTitle>{v.propertyType.charAt(0) + v.propertyType.slice(1).toLowerCase()} details</SectionTitle>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {attrDefs.map((def) =>
               def.type === 'boolean' ? (
                 <div key={def.key} className="flex items-center pt-6">
@@ -616,7 +685,7 @@ export function PropertyForm({
               ) : def.type === 'select' ? (
                 <Field key={def.key} label={def.label}>
                   <Select value={String(v.attributes[def.key] ?? '')} onChange={(e) => setAttr(def.key, e.target.value)}>
-                    <option value="">—</option>
+                    <option value="">-</option>
                     {def.options.map((o) => (
                       <option key={o.value} value={o.value}>
                         {o.label}
@@ -639,7 +708,7 @@ export function PropertyForm({
       )}
 
       <SectionTitle>Assignment</SectionTitle>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Agent" required>
           <Select value={v.agentUserId} onChange={(e) => set('agentUserId', e.target.value)} required>
             <option value="">Select agent…</option>
@@ -652,7 +721,7 @@ export function PropertyForm({
         </Field>
         <Field label="Owner">
           <Select value={v.ownerContactId} onChange={(e) => set('ownerContactId', e.target.value)}>
-            <option value="">—</option>
+            <option value="">-</option>
             {owners.data?.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.fullName} ({o.code})
@@ -673,8 +742,9 @@ export function PropertyForm({
 
       {enableImages && step === 3 && propertyId && (
       <div className="space-y-5">
-      <SectionTitle>Photos</SectionTitle>
+      <SectionTitle>Photos &amp; videos</SectionTitle>
       <ImageManager propertyId={propertyId} />
+      <VideoManager propertyId={propertyId} />
       </div>
       )}
 
@@ -731,8 +801,52 @@ export function PropertyForm({
       )}
       <p className="text-xs text-gray-400">
         {images.length
-          ? `${images.length} photo${images.length === 1 ? '' : 's'} ready — uploaded after the property is created.`
+          ? `${images.length} photo${images.length === 1 ? '' : 's'} ready, uploaded after the property is created.`
           : 'No photos added. You can also add them later from the property page.'}
+      </p>
+
+      <SectionTitle>Videos</SectionTitle>
+      <div
+        onClick={() => videoFileRef.current?.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          addVideoFiles(e.dataTransfer.files);
+        }}
+        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center transition hover:border-brand/40 hover:bg-gray-100"
+      >
+        <Video className="h-7 w-7 text-gray-400" />
+        <p className="text-sm font-medium text-gray-600">Click to upload or drag &amp; drop</p>
+        <p className="text-xs text-gray-400">MP4 or WebM. The first video plays on hover on the website.</p>
+        <input ref={videoFileRef} type="file" accept="video/*" multiple hidden onChange={(e) => addVideoFiles(e.target.files)} />
+      </div>
+
+      {videos.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {videos.map((vid, i) => (
+            <div key={vid.url} className="group relative overflow-hidden rounded-lg border border-gray-200 bg-black">
+              <video src={vid.url} className="aspect-[4/3] w-full object-cover" muted playsInline preload="metadata" />
+              {i === 0 && (
+                <span className="absolute left-2 top-2 rounded bg-gold px-1.5 py-0.5 text-[10px] font-semibold text-brand">HOVER</span>
+              )}
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-1 bg-black/50 p-1.5 opacity-0 transition group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={() => removeVideo(i)}
+                  className="rounded bg-white/20 p-1 text-white hover:bg-red-500"
+                  title="Remove"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="text-xs text-gray-400">
+        {videos.length
+          ? `${videos.length} video${videos.length === 1 ? '' : 's'} ready, uploaded after the property is created.`
+          : 'No videos added. You can also add them later from the property page.'}
       </p>
       </div>
       )}

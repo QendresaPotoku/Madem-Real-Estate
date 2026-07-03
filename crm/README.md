@@ -1,4 +1,4 @@
-# MADEM CRM — Admin (Next.js)
+# MADEM CRM - Admin (Next.js)
 
 Internal admin dashboard for the MADEM real-estate CRM. Talks to the Fastify backend via a typed client generated from its OpenAPI spec.
 
@@ -36,25 +36,25 @@ components/
   providers.tsx         QueryClientProvider
 lib/
   api.ts                openapi-fetch client + tx() i18n helper
-  api-types.ts          GENERATED — do not edit (npm run gen:api)
+  api-types.ts          GENERATED - do not edit (npm run gen:api)
   cn.ts                 className helper
 middleware.ts           session-cookie route guard
 ```
 
 ## Implemented (full CRM)
 All screens run against the live API via the generated typed client:
-- **Auth** — login/logout, middleware session guard
-- **Dashboard** — live KPIs, pipeline counts, upcoming reminders
-- **Properties** — list (search/filter/paginate) + create + **detail/edit** with i18n title/description tabs, **image manager** (presigned upload, set-cover, reorder, delete) and **document manager** (upload, verify status, presigned download)
-- **Contacts** — list + create
-- **Opportunities** — list + create + **ranked matches** modal (scoring engine)
-- **Viewings** — schedule + status
-- **Offers** — create + status
-- **Deals** — create + status (CLOSED_WON → property SOLD/RENTED)
-- **Contracts** — create + status + **reminders** view (auto-generated for rentals)
-- **Commissions** — create + **splits editor** (live sum=100 validation)
-- **Tasks** — create + assignee/priority/status
-- **Users & Agents** — admin create/list
+- **Auth** - login/logout, middleware session guard
+- **Dashboard** - live KPIs, pipeline counts, upcoming reminders
+- **Properties** - list (search/filter/paginate) + create + **detail/edit** with i18n title/description tabs, **image manager** (presigned upload, set-cover, reorder, delete) and **document manager** (upload, verify status, presigned download)
+- **Contacts** - list + create
+- **Opportunities** - list + create + **ranked matches** modal (scoring engine)
+- **Viewings** - schedule + status
+- **Offers** - create + status
+- **Deals** - create + status (CLOSED_WON → property SOLD/RENTED)
+- **Contracts** - create + status + **reminders** view (auto-generated for rentals)
+- **Commissions** - create + **splits editor** (live sum=100 validation)
+- **Tasks** - create + assignee/priority/status
+- **Users & Agents** - admin create/list
 
 Shared UI kit in `components/ui.tsx`; reusable form/upload/query helpers in `lib/` and `components/`.
 

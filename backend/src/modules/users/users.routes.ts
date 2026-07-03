@@ -101,7 +101,7 @@ export async function userRoutes(app: FastifyInstance) {
       return repo().findOneByOrFail({ id: user.id });
     });
 
-  r.delete('/:id', { schema: { tags: ['users'], summary: 'Deactivate a user (soft — sets status INACTIVE)', params: uuidParamSchema, response: { 204: z.null(), 400: errorResponseSchema, 404: errorResponseSchema } } },
+  r.delete('/:id', { schema: { tags: ['users'], summary: 'Deactivate a user (soft - sets status INACTIVE)', params: uuidParamSchema, response: { 204: z.null(), 400: errorResponseSchema, 404: errorResponseSchema } } },
     async (req, reply) => {
       if (req.authUser!.id === req.params.id) throw AppError.badRequest('You cannot deactivate your own account');
       const user = await repo().findOneBy({ id: req.params.id });

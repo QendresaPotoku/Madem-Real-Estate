@@ -32,7 +32,7 @@ export default function BlogDetail() {
         />
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container mx-auto text-center">
             <span className="text-[#F3D8A5] tracking-widest text-xs uppercase font-bold mb-4 block bg-[#0B3A36]/80 inline-block px-3 py-1 rounded-sm">
               {tEnum("blogCategory", post.category)}
             </span>
@@ -43,7 +43,7 @@ export default function BlogDetail() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 flex-grow">
+      <div className="container mx-auto py-16 flex-grow">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 -mt-32 relative z-10 rounded-lg shadow-xl border border-gray-100">
           
           <Link href="/blog" className="text-gray-500 hover:text-[#0B3A36] text-sm font-medium uppercase tracking-wider flex items-center mb-8 transition-colors">

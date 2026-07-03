@@ -40,8 +40,8 @@ function daysUntil(endDate: string): number {
 
 /** Urgency badge for a contract's end date. */
 function ExpiryBadge({ endDate, status }: { endDate: string | null; status: string }) {
-  if (!endDate) return <span className="text-xs text-gray-400">—</span>;
-  if (['TERMINATED', 'COMPLETED', 'RENEWED'].includes(status)) return <span className="text-xs text-gray-400">—</span>;
+  if (!endDate) return <span className="text-xs text-gray-400">-</span>;
+  if (['TERMINATED', 'COMPLETED', 'RENEWED'].includes(status)) return <span className="text-xs text-gray-400">-</span>;
   const days = daysUntil(endDate);
   if (days < 0) return <Badge className="bg-gray-100 text-gray-500">Expired</Badge>;
   if (days === 0) return <Badge className="bg-red-100 text-red-700">Expires today</Badge>;
@@ -74,8 +74,8 @@ function ContractsInner() {
   const agents = useAgents();
   const contacts = useContacts();
   const propLabel = (id: string) => props.data?.find((x) => x.id === id)?.propertyCode ?? id.slice(0, 8);
-  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '—' : '—');
-  const contactName = (id: string | null) => (id ? contacts.data?.find((c) => c.id === id)?.fullName ?? '—' : '—');
+  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '-' : '-');
+  const contactName = (id: string | null) => (id ? contacts.data?.find((c) => c.id === id)?.fullName ?? '-' : '-');
 
   // URL is the source of truth for filters/sort/page, so views are shareable.
   const status = sp.get('status') ?? '';
@@ -149,7 +149,7 @@ function ContractsInner() {
   const totalPages = data?.meta.totalPages ?? 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Contracts"
         subtitle={`${data?.meta.total ?? 0} contracts`}
@@ -374,10 +374,10 @@ function ContractModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose
   const contacts = useContacts();
   const agents = useAgents();
   const isEdit = !!row;
-  // Owner side = seller/landlord; counterparty = buyer/tenant. Disjoint by type,
-  // so the same contact can never be picked for both sides.
-  const owners = (contacts.data ?? []).filter((c) => c.contactType === 'OWNER' || c.contactType === 'LANDLORD');
-  const counterparties = (contacts.data ?? []).filter((c) => c.contactType === 'BUYER' || c.contactType === 'TENANT');
+  // Owner side = seller/landlord; counterparty = buyer/tenant. Both pick from the
+  // full contact list - the role is implied by the side they're placed on.
+  const owners = contacts.data ?? [];
+  const counterparties = contacts.data ?? [];
   const [f, setF] = useState({
     propertyId: row?.propertyId ?? '',
     dealId: row?.dealId ?? '',
@@ -421,7 +421,7 @@ function ContractModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose
         className="space-y-4"
       >
         {!isEdit && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Property">
               <Select value={f.propertyId} onChange={(e) => set('propertyId', e.target.value)} required>
                 <option value="">Select property…</option>
@@ -434,7 +434,7 @@ function ContractModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose
             </Field>
             <Field label="Deal (optional)">
               <Select value={f.dealId} onChange={(e) => set('dealId', e.target.value)}>
-                <option value="">—</option>
+                <option value="">-</option>
                 {deals.data?.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.code}
@@ -444,14 +444,14 @@ function ContractModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose
             </Field>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {!isEdit && (
             <Field label="Owner (seller/landlord)">
               <Select value={f.ownerContactId} onChange={(e) => set('ownerContactId', e.target.value)} required>
                 <option value="">Select…</option>
                 {owners.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.fullName} ({c.contactType})
+                    {c.fullName}
                   </option>
                 ))}
               </Select>
@@ -459,10 +459,10 @@ function ContractModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose
           )}
           <Field label="Counterparty (buyer/tenant)">
             <Select value={f.counterpartyContactId} onChange={(e) => set('counterpartyContactId', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {counterparties.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.fullName} ({c.contactType})
+                  {c.fullName}
                 </option>
               ))}
             </Select>
@@ -479,7 +479,7 @@ function ContractModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose
             </Field>
           )}
         </div>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {!isEdit && (
             <Field label="Type">
               <Select value={f.contractType} onChange={(e) => set('contractType', e.target.value)}>
@@ -490,7 +490,7 @@ function ContractModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose
           )}
           <Field label="Agent">
             <Select value={f.agentUserId} onChange={(e) => set('agentUserId', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {agents.data?.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.fullName}
@@ -594,7 +594,7 @@ function statusLabel(s: string) {
 
 /** Short, locale-friendly date (e.g. "18 Jun 2026"). */
 function formatDate(value: string | null | undefined) {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = new Date(`${value}T00:00:00`);
   return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }

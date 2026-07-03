@@ -24,7 +24,7 @@ export function CTASection({
   
   return (
     <section className={`py-24 ${isDark ? "bg-[#0B3A36] text-white" : "bg-gray-50 text-[#0B3A36]"}`}>
-      <div className="container mx-auto px-4 text-center max-w-3xl">
+      <div className="container mx-auto text-center max-w-3xl">
         <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">{title}</h2>
         <p className={`text-lg mb-10 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
           {subtitle}

@@ -1,14 +1,11 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from './base.entity';
 import { User } from './user.entity';
-import {
-  CONTACT_SOURCES,
-  CONTACT_TYPES,
-  type ContactSource,
-  type ContactType,
-} from '../schemas/enums';
+import { CONTACT_SOURCES, type ContactSource } from '../schemas/enums';
 
-/** External people: owners, buyers, tenants, landlords, investors. */
+/** External people: owners, buyers, tenants, etc. The role a contact plays is
+ *  derived from their relationships (property owner, opportunity buyer, deal party),
+ *  not stored on the contact itself. */
 @Entity({ name: 'contacts' })
 export class Contact extends AbstractEntity {
   @Index({ unique: true })
@@ -26,9 +23,6 @@ export class Contact extends AbstractEntity {
 
   @Column({ type: 'text', name: 'id_number', nullable: true })
   idNumber!: string | null;
-
-  @Column({ type: 'enum', enum: CONTACT_TYPES, enumName: 'contact_type' })
-  contactType!: ContactType;
 
   @Column({ type: 'enum', enum: CONTACT_SOURCES, enumName: 'contact_source', default: 'OTHER' })
   source!: ContactSource;

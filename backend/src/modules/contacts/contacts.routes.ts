@@ -2,16 +2,17 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { Brackets } from 'typeorm';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { Contact, Opportunity } from '../../entities';
+import { Contact, Deal, Opportunity, Property } from '../../entities';
 import { AppError } from '../../lib/errors';
 import { paginate } from '../../lib/pagination';
 import {
   errorResponseSchema,
   listResponse,
+  localizedSchema,
   paginationQuerySchema,
   uuidParamSchema,
 } from '../../schemas/common';
-import { CONTACT_SOURCES, CONTACT_TYPES } from '../../schemas/enums';
+import { CONTACT_SOURCES, LISTING_TYPES, PROPERTY_STATUSES, PROPERTY_TYPES } from '../../schemas/enums';
 
 const contactResponse = z.object({
   id: z.string().uuid(),
@@ -20,7 +21,6 @@ const contactResponse = z.object({
   phone: z.string().nullable(),
   email: z.string().nullable(),
   idNumber: z.string().nullable(),
-  contactType: z.enum(CONTACT_TYPES),
   source: z.enum(CONTACT_SOURCES),
   notes: z.string().nullable(),
   createdBy: z.string().uuid().nullable(),
@@ -30,12 +30,25 @@ const contactResponse = z.object({
   opportunityCount: z.number().optional(),
 });
 
+/** A property linked to a contact, with the role(s) the contact plays for it. */
+const contactPropertyResponse = z.object({
+  id: z.string().uuid(),
+  propertyCode: z.string(),
+  titleJson: localizedSchema,
+  status: z.enum(PROPERTY_STATUSES),
+  listingType: z.enum(LISTING_TYPES),
+  propertyType: z.enum(PROPERTY_TYPES),
+  city: z.string(),
+  area: z.string().nullable(),
+  price: z.number(),
+  roles: z.array(z.string()),
+});
+
 const createBody = z.object({
   fullName: z.string().min(1),
   phone: z.string().optional(),
   email: z.string().email().optional(),
   idNumber: z.string().optional(),
-  contactType: z.enum(CONTACT_TYPES),
   source: z.enum(CONTACT_SOURCES).default('OTHER'),
   notes: z.string().optional(),
 });
@@ -43,7 +56,6 @@ const createBody = z.object({
 const updateBody = createBody.partial();
 
 const listQuery = paginationQuerySchema.extend({
-  contactType: z.enum(CONTACT_TYPES).optional(),
   source: z.enum(CONTACT_SOURCES).optional(),
   search: z.string().optional(),
 });
@@ -65,9 +77,8 @@ export async function contactRoutes(app: FastifyInstance) {
       },
     },
     async (req) => {
-      const { contactType, source, search } = req.query;
+      const { source, search } = req.query;
       const qb = app.repo(Contact).createQueryBuilder('c');
-      if (contactType) qb.andWhere('c.contact_type = :contactType', { contactType });
       if (source) qb.andWhere('c.source = :source', { source });
       if (search) {
         qb.andWhere(
@@ -117,6 +128,54 @@ export async function contactRoutes(app: FastifyInstance) {
       const contact = await app.repo(Contact).findOneBy({ id: req.params.id });
       if (!contact) throw AppError.notFound('Contact');
       return contact;
+    },
+  );
+
+  r.get(
+    '/:id/properties',
+    {
+      schema: {
+        tags: ['contacts'],
+        summary: 'Properties linked to a contact (as owner, buyer or seller)',
+        params: uuidParamSchema,
+        response: { 200: z.array(contactPropertyResponse), 404: errorResponseSchema },
+      },
+    },
+    async (req) => {
+      const contactId = req.params.id;
+      if (!(await app.repo(Contact).existsBy({ id: contactId }))) throw AppError.notFound('Contact');
+
+      // Owned listings + properties from deals where the contact is buyer or seller.
+      const owned = await app.repo(Property).findBy({ ownerContactId: contactId });
+      const deals = await app.repo(Deal).find({
+        where: [{ buyerContactId: contactId }, { sellerContactId: contactId }],
+        relations: { property: true },
+      });
+
+      const byId = new Map<string, { property: Property; roles: Set<string> }>();
+      const add = (p: Property | undefined, role: string) => {
+        if (!p) return;
+        if (!byId.has(p.id)) byId.set(p.id, { property: p, roles: new Set() });
+        byId.get(p.id)!.roles.add(role);
+      };
+      for (const p of owned) add(p, 'OWNER');
+      for (const d of deals) {
+        if (d.buyerContactId === contactId) add(d.property, 'BUYER');
+        if (d.sellerContactId === contactId) add(d.property, 'SELLER');
+      }
+
+      return [...byId.values()].map(({ property: p, roles }) => ({
+        id: p.id,
+        propertyCode: p.propertyCode,
+        titleJson: p.titleJson,
+        status: p.status,
+        listingType: p.listingType,
+        propertyType: p.propertyType,
+        city: p.city,
+        area: p.area,
+        price: p.price,
+        roles: [...roles],
+      }));
     },
   );
 

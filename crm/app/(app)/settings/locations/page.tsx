@@ -32,9 +32,9 @@ export default function LocationSettingsPage() {
   });
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader title="Location Data" subtitle="Manage countries, cities, areas and cadastral zones used in CRM forms" />
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <CountryPanel data={data} pending={create.isPending || remove.isPending} onCreate={(name) => create.mutate({ path: 'countries', body: { name } })} onDelete={(id) => remove.mutate({ path: 'countries', id })} />
         <CityPanel data={data} pending={create.isPending || remove.isPending} onCreate={(body) => create.mutate({ path: 'cities', body })} onDelete={(id) => remove.mutate({ path: 'cities', id })} />
         <AreaPanel data={data} pending={create.isPending || remove.isPending} onCreate={(body) => create.mutate({ path: 'areas', body })} onDelete={(id) => remove.mutate({ path: 'areas', id })} />

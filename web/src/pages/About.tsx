@@ -4,17 +4,23 @@ import { TeamCard } from "@/components/TeamCard";
 import { useAgents } from "@/hooks/useApi";
 import { Building2, Award, Users, Globe2 } from "lucide-react";
 import { useT } from "@/i18n/useT";
+import { Seo } from "@/components/Seo";
 
 export default function AboutPage() {
   const { t } = useT();
   const { data: agents = [] } = useAgents();
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-20">
+      <Seo
+        title={t("seo.aboutTitle")}
+        description={t("seo.aboutDescription")}
+        path="/about"
+      />
       <Header />
       
       {/* Hero */}
       <section className="bg-[#0B3A36] py-24 text-white">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
+        <div className="container mx-auto max-w-4xl text-center">
           <span className="text-[#F3D8A5] tracking-[0.3em] text-xs uppercase font-semibold mb-6 block">{t("about.eyebrow")}</span>
           <h1 className="font-serif text-4xl md:text-6xl font-bold mb-8 leading-tight">{t("about.title")}</h1>
           <p className="text-lg text-gray-300 leading-relaxed">
@@ -25,7 +31,7 @@ export default function AboutPage() {
 
       {/* Main Content */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
               <p>{t("about.para1")}</p>
@@ -44,7 +50,7 @@ export default function AboutPage() {
 
       {/* Core Values */}
       <section className="py-24 bg-gray-50">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl text-[#0B3A36] font-bold mb-4">{t("about.valuesTitle")}</h2>
             <p className="text-gray-600">{t("about.valuesSubtitle")}</p>
@@ -85,7 +91,7 @@ export default function AboutPage() {
 
       {/* Team */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl text-[#0B3A36] font-bold mb-4">{t("about.teamTitle")}</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">{t("about.teamSubtitle")}</p>

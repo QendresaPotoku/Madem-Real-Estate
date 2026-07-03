@@ -32,6 +32,13 @@ export function getS3(): S3Client | null {
 
 export const isStorageConfigured = () => getS3() !== null;
 
+/** Private bucket for `documents/*`; falls back to the main bucket when unset. */
+const docsBucket = () => config.S3_DOCS_BUCKET || config.S3_BUCKET;
+
+/** Documents live in the private bucket; images/avatars in the public one. */
+const bucketForKey = (key: string) =>
+  key.startsWith('documents/') ? docsBucket() : config.S3_BUCKET;
+
 /** Create the bucket if it doesn't exist (best-effort, for local MinIO). */
 export async function ensureBucket(): Promise<void> {
   const s3 = getS3();
@@ -42,7 +49,7 @@ export async function ensureBucket(): Promise<void> {
     try {
       await s3.send(new CreateBucketCommand({ Bucket: config.S3_BUCKET }));
     } catch {
-      /* ignore — bucket may exist or perms differ in prod */
+      /* ignore - bucket may exist or perms differ in prod */
     }
   }
 
@@ -62,7 +69,7 @@ export async function ensureBucket(): Promise<void> {
   try {
     await s3.send(new PutBucketPolicyCommand({ Bucket: bucket, Policy: JSON.stringify(policy) }));
   } catch {
-    /* ignore — policy management may be restricted in prod (use CDN/object ACLs there) */
+    /* ignore - policy management may be restricted in prod (use CDN/object ACLs there) */
   }
 }
 
@@ -70,7 +77,7 @@ export async function ensureBucket(): Promise<void> {
 export async function createUploadUrl(key: string, contentType: string, expiresIn = 300) {
   const s3 = getS3();
   if (!s3 || !config.S3_BUCKET) throw new Error('storage not configured');
-  const command = new PutObjectCommand({ Bucket: config.S3_BUCKET, Key: key, ContentType: contentType });
+  const command = new PutObjectCommand({ Bucket: bucketForKey(key), Key: key, ContentType: contentType });
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn });
   return { uploadUrl, publicUrl: publicUrlFor(key) };
 }
@@ -79,11 +86,17 @@ export async function createUploadUrl(key: string, contentType: string, expiresI
 export async function createDownloadUrl(key: string, expiresIn = 300): Promise<string> {
   const s3 = getS3();
   if (!s3 || !config.S3_BUCKET) throw new Error('storage not configured');
-  const command = new GetObjectCommand({ Bucket: config.S3_BUCKET, Key: key });
+  const command = new GetObjectCommand({ Bucket: bucketForKey(key), Key: key });
   return getSignedUrl(s3, command, { expiresIn });
 }
 
 export function publicUrlFor(key: string): string {
-  const base = config.S3_PUBLIC_URL ?? `${config.S3_ENDPOINT}/${config.S3_BUCKET}`;
+  // Documents live in the private bucket and are only ever fetched via presigned
+  // GET, so their "public" URL is informational; point it at the right bucket.
+  const bucket = bucketForKey(key);
+  const base =
+    bucket === config.S3_BUCKET && config.S3_PUBLIC_URL
+      ? config.S3_PUBLIC_URL
+      : `${config.S3_ENDPOINT}/${bucket}`;
   return `${base.replace(/\/$/, '')}/${key}`;
 }

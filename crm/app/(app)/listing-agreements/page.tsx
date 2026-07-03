@@ -54,10 +54,10 @@ function ListingAgreementsInner() {
 
   const props = useProperties();
   const agents = useAgents();
-  const owners = useContacts('OWNER');
+  const owners = useContacts();
   const propLabel = (id: string) => props.data?.find((x) => x.id === id)?.propertyCode ?? id.slice(0, 8);
-  const agentName = (id: string) => agents.data?.find((a) => a.id === id)?.fullName ?? '—';
-  const ownerName = (id: string) => owners.data?.find((o) => o.id === id)?.fullName ?? '—';
+  const agentName = (id: string) => agents.data?.find((a) => a.id === id)?.fullName ?? '-';
+  const ownerName = (id: string) => owners.data?.find((o) => o.id === id)?.fullName ?? '-';
 
   // URL is the source of truth for filters/page, so views are shareable.
   const status = sp.get('status') ?? '';
@@ -119,7 +119,7 @@ function ListingAgreementsInner() {
   const totalPages = data?.meta.totalPages ?? 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Listing agreements"
         subtitle={`${data?.meta.total ?? 0} mandates`}
@@ -198,7 +198,7 @@ function ListingAgreementsInner() {
             <td className="px-4 py-3">
               <ExpiryBadge endDate={a.endDate} />
             </td>
-            <td className="px-4 py-3 text-right text-gray-600">{a.commissionPercentage != null ? `${a.commissionPercentage}%` : '—'}</td>
+            <td className="px-4 py-3 text-right text-gray-600">{a.commissionPercentage != null ? `${a.commissionPercentage}%` : '-'}</td>
             <td className="px-4 py-3">
               <StatusBadge value={a.status} />
             </td>
@@ -330,14 +330,14 @@ function deleteErrorMessage(err: unknown): string {
 
 /** Short, locale-friendly date (e.g. "18 Jun 2026"). */
 function formatDate(value: string | null | undefined) {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = new Date(`${value}T00:00:00`);
   return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function AgreementModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose: () => void; onSubmit: (b: any) => void; pending: boolean }) {
   const props = useProperties();
-  const owners = useContacts('OWNER');
+  const owners = useContacts();
   const agents = useAgents();
   const [f, setF] = useState({
     propertyId: row?.propertyId ?? '',
@@ -369,7 +369,7 @@ function AgreementModal({ row, onClose, onSubmit, pending }: { row?: Row; onClos
         }}
         className="space-y-4"
       >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Property">
             <Select value={f.propertyId} onChange={(e) => set('propertyId', e.target.value)} required>
               <option value="">Select property…</option>
@@ -391,7 +391,7 @@ function AgreementModal({ row, onClose, onSubmit, pending }: { row?: Row; onClos
             </Select>
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Agent">
             <Select value={f.agentUserId} onChange={(e) => set('agentUserId', e.target.value)} required>
               <option value="">Select agent…</option>
@@ -410,7 +410,7 @@ function AgreementModal({ row, onClose, onSubmit, pending }: { row?: Row; onClos
             </Select>
           </Field>
         </div>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Field label="Start date">
             <Input type="date" value={f.startDate} onChange={(e) => set('startDate', e.target.value)} required />
           </Field>

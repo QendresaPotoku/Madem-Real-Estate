@@ -41,18 +41,17 @@ export function Header() {
 
   const linkClass = "text-sm lg:text-base font-medium tracking-wide hover:text-[#F3D8A5] transition-colors relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-[#F3D8A5] after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left";
 
+  // Trimmed for launch: only Ballina / Pronat / Rreth nesh / Kontakti.
   const navLinks = [
     { name: t("nav.home"), href: "/" },
     { name: t("nav.properties"), href: "/properties" },
     { name: t("nav.about"), href: "/about" },
-    { name: t("nav.blog"), href: "/blog" },
-    { name: t("nav.faq"), href: "/faq" },
     { name: t("nav.contact"), href: "/contact" },
   ];
 
   return (
     <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${headerBgClass}`}>
-      <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
+      <div className="container mx-auto h-20 flex items-center justify-between">
 
         {/* Logo */}
         <Link href="/" className="flex items-center z-50">

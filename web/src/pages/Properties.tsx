@@ -6,11 +6,13 @@ import { SearchFilters, type PropertyFilters } from "@/components/SearchFilters"
 import { PropertyGrid } from "@/components/PropertyGrid";
 import { Pagination } from "@/components/Pagination";
 import { useProperties } from "@/hooks/useApi";
-import { Filter, SlidersHorizontal } from "lucide-react";
+import { Filter, SlidersHorizontal, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useT } from "@/i18n/useT";
+import { Seo } from "@/components/Seo";
 
 const CANONICAL_TYPES = ["Apartment", "House", "Villa", "Office", "Commercial", "Land", "Warehouse"];
 
@@ -32,13 +34,14 @@ function parseFiltersFromSearch(search: string): PropertyFilters | null {
 }
 
 export default function PropertiesPage() {
-  const { t } = useT();
+  const { t, tx } = useT();
   const { data: properties = [] } = useProperties();
   const search = useSearch();
   const urlFilters = useMemo(() => parseFiltersFromSearch(search), [search]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState("newest");
+  const [titleQuery, setTitleQuery] = useState("");
   const [filters, setFilters] = useState<PropertyFilters | null>(urlFilters);
   const itemsPerPage = 9;
 
@@ -56,19 +59,20 @@ export default function PropertiesPage() {
 
   // Filter then sort
   const sortedProperties = useMemo(() => {
-    const filtered = !filters
-      ? properties
-      : properties.filter((p) => {
-          if (filters.status === "Sale" && p.status === "For Rent") return false;
-          if (filters.status === "Rent" && p.status !== "For Rent") return false;
-          if (filters.country !== "all" && p.country !== filters.country) return false;
-          if (filters.city !== "all" && p.city !== filters.city) return false;
-          if (filters.area !== "all" && p.neighborhood !== filters.area) return false;
-          if (filters.cadastralZone !== "all" && p.cadastralZone !== filters.cadastralZone) return false;
-          if (filters.type !== "all" && p.type !== filters.type) return false;
-          if (filters.bedrooms !== "any" && (p.bedrooms ?? 0) < Number(filters.bedrooms)) return false;
-          return true;
-        });
+    const query = titleQuery.trim().toLowerCase();
+    const filtered = properties.filter((p) => {
+      if (query && !tx(p.title).toLowerCase().includes(query)) return false;
+      if (!filters) return true;
+      if (filters.status === "Sale" && p.status === "For Rent") return false;
+      if (filters.status === "Rent" && p.status !== "For Rent") return false;
+      if (filters.country !== "all" && p.country !== filters.country) return false;
+      if (filters.city !== "all" && p.city !== filters.city) return false;
+      if (filters.area !== "all" && p.neighborhood !== filters.area) return false;
+      if (filters.cadastralZone !== "all" && p.cadastralZone !== filters.cadastralZone) return false;
+      if (filters.type !== "all" && p.type !== filters.type) return false;
+      if (filters.bedrooms !== "any" && (p.bedrooms ?? 0) < Number(filters.bedrooms)) return false;
+      return true;
+    });
 
     let sorted = [...filtered];
     switch(sortBy) {
@@ -93,7 +97,7 @@ export default function PropertiesPage() {
         break;
     }
     return sorted;
-  }, [sortBy, filters, properties]);
+  }, [sortBy, filters, properties, titleQuery, tx]);
 
   const totalPages = Math.ceil(sortedProperties.length / itemsPerPage);
   const paginatedProperties = sortedProperties.slice(
@@ -103,16 +107,22 @@ export default function PropertiesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pt-20">
+      <Seo
+        title={t("seo.propertiesTitle")}
+        description={t("seo.propertiesDescription")}
+        keywords={t("seo.propertiesKeywords")}
+        path="/properties"
+      />
       <Header />
-      
+
       <div className="bg-[#0B3A36] py-12 text-white border-t border-[#F3D8A5]/10">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">{t("propertiesPage.title")}</h1>
           <p className="text-gray-300 max-w-2xl">{t("propertiesPage.subtitle")}</p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12 flex-grow">
+      <div className="container mx-auto py-12 flex-grow">
         <div className="flex flex-col lg:flex-row gap-8">
           
           {/* Desktop Sidebar Filters */}
@@ -127,10 +137,25 @@ export default function PropertiesPage() {
             
             {/* Top Toolbar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
-              <p className="text-sm font-medium text-gray-600">
-                {t("propertiesPage.showing", { count: sortedProperties.length })}
-              </p>
-              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    type="search"
+                    value={titleQuery}
+                    onChange={(e) => {
+                      setTitleQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    placeholder={t("propertiesPage.searchPlaceholder")}
+                    className="pl-9 bg-white border-gray-200"
+                  />
+                </div>
+                <p className="text-sm font-medium text-gray-600 whitespace-nowrap">
+                  {t("propertiesPage.showing", { count: sortedProperties.length })}
+                </p>
+              </div>
+
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <Drawer open={isMobileFiltersOpen} onOpenChange={setIsMobileFiltersOpen}>
                   <DrawerTrigger asChild>

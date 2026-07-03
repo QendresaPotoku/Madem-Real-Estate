@@ -117,7 +117,7 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
               }}
               className="w-full bg-transparent border-none text-gray-900 font-medium focus:ring-0 cursor-pointer appearance-none"
             >
-              <option value="all">All countries</option>
+              <option value="all">{t("searchFilters.allCountries")}</option>
               {locations?.countries.map((c) => (
                 <option key={c.id} value={c.name}>{c.name}</option>
               ))}
@@ -243,7 +243,7 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
             onChange={(e) => setArea(e.target.value)}
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-[#0B3A36] focus:ring-0 transition-colors"
           >
-            <option value="all">All areas</option>
+            <option value="all">{t("searchFilters.allAreas")}</option>
             {areaOptions.map((a) => (
               <option key={a.id} value={a.name}>{a.name}</option>
             ))}
@@ -257,7 +257,7 @@ export function SearchFilters({ variant = "sidebar", onSearch, initial }: Search
             onChange={(e) => setCadastralZone(e.target.value)}
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-sm text-sm focus:border-[#0B3A36] focus:ring-0 transition-colors"
           >
-            <option value="all">All cadastral zones</option>
+            <option value="all">{t("searchFilters.allCadastralZones")}</option>
             {cadastralOptions.map((z) => (
               <option key={z.id} value={z.name}>{z.name}</option>
             ))}

@@ -434,7 +434,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** Deactivate a user (soft — sets status INACTIVE) */
+        /** Deactivate a user (soft - sets status INACTIVE) */
         delete: {
             parameters: {
                 query?: never;
@@ -1189,7 +1189,6 @@ export interface paths {
                     limit?: number;
                     sort?: string;
                     order?: "ASC" | "DESC";
-                    contactType?: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                     source?: "WEBSITE" | "REFERRAL" | "WALK_IN" | "PHONE" | "SOCIAL" | "OTHER";
                     search?: string;
                 };
@@ -1214,8 +1213,6 @@ export interface paths {
                                 phone: string | null;
                                 email: string | null;
                                 idNumber: string | null;
-                                /** @enum {string} */
-                                contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                                 /** @enum {string} */
                                 source: "WEBSITE" | "REFERRAL" | "WALK_IN" | "PHONE" | "SOCIAL" | "OTHER";
                                 notes: string | null;
@@ -1255,8 +1252,6 @@ export interface paths {
                         /** Format: email */
                         email?: string;
                         idNumber?: string;
-                        /** @enum {string} */
-                        contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                         /**
                          * @default OTHER
                          * @enum {string}
@@ -1281,8 +1276,6 @@ export interface paths {
                             phone: string | null;
                             email: string | null;
                             idNumber: string | null;
-                            /** @enum {string} */
-                            contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                             /** @enum {string} */
                             source: "WEBSITE" | "REFERRAL" | "WALK_IN" | "PHONE" | "SOCIAL" | "OTHER";
                             notes: string | null;
@@ -1337,8 +1330,6 @@ export interface paths {
                             phone: string | null;
                             email: string | null;
                             idNumber: string | null;
-                            /** @enum {string} */
-                            contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                             /** @enum {string} */
                             source: "WEBSITE" | "REFERRAL" | "WALK_IN" | "PHONE" | "SOCIAL" | "OTHER";
                             notes: string | null;
@@ -1425,8 +1416,6 @@ export interface paths {
                         /** Format: email */
                         email?: string;
                         idNumber?: string;
-                        /** @enum {string} */
-                        contactType?: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                         /**
                          * @default OTHER
                          * @enum {string}
@@ -1451,8 +1440,6 @@ export interface paths {
                             phone: string | null;
                             email: string | null;
                             idNumber: string | null;
-                            /** @enum {string} */
-                            contactType: "OWNER" | "BUYER" | "TENANT" | "LANDLORD" | "INVESTOR";
                             /** @enum {string} */
                             source: "WEBSITE" | "REFERRAL" | "WALK_IN" | "PHONE" | "SOCIAL" | "OTHER";
                             notes: string | null;
@@ -1481,6 +1468,76 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/contacts/{id}/properties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Properties linked to a contact (as owner, buyer or seller) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            propertyCode: string;
+                            titleJson: {
+                                en: string;
+                                sq: string;
+                                de: string;
+                            };
+                            /** @enum {string} */
+                            status: "DRAFT" | "ACTIVE" | "RESERVED" | "SOLD" | "RENTED" | "ARCHIVED";
+                            /** @enum {string} */
+                            listingType: "SALE" | "RENT";
+                            /** @enum {string} */
+                            propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                            city: string;
+                            area: string | null;
+                            price: number;
+                            roles: string[];
+                        }[];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/properties": {
@@ -2355,6 +2412,222 @@ export interface paths {
                 path: {
                     id: string;
                     imageId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": "null" | null;
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/properties/{id}/videos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            propertyId: string;
+                            videoUrl: string;
+                            storageKey: string | null;
+                            sortOrder: number;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Attach an uploaded video to a property */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: uri */
+                        videoUrl: string;
+                        storageKey?: string;
+                        sortOrder?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            propertyId: string;
+                            videoUrl: string;
+                            storageKey: string | null;
+                            sortOrder: number;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/properties/{id}/videos/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Reorder videos */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        order: {
+                            /** Format: uuid */
+                            id: string;
+                            sortOrder: number;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            propertyId: string;
+                            videoUrl: string;
+                            storageKey: string | null;
+                            sortOrder: number;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/properties/{id}/videos/{videoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    videoId: string;
                 };
                 cookie?: never;
             };
@@ -3444,6 +3717,89 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/properties/{id}/matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recompute and return open opportunities that match a property */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            opportunityId: string;
+                            /** Format: uuid */
+                            propertyId: string;
+                            /** @enum {string} */
+                            status: "SUGGESTED" | "SHARED" | "VIEWING" | "REJECTED" | "ACCEPTED";
+                            matchScore: number | null;
+                            opportunity?: {
+                                /** Format: uuid */
+                                id: string;
+                                code: string;
+                                /** @enum {string} */
+                                status: "NEW" | "QUALIFIED" | "VIEWING" | "NEGOTIATING" | "WON" | "LOST";
+                                /** @enum {string} */
+                                listingType: "SALE" | "RENT";
+                                /** @enum {string} */
+                                propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
+                                city: string | null;
+                                area: string | null;
+                                budgetMin: number | null;
+                                budgetMax: number | null;
+                                contactName: string | null;
+                                /** Format: uuid */
+                                assignedAgentId: string | null;
+                            };
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                        }[];
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/matches/{id}": {
         parameters: {
             query?: never;
@@ -4193,6 +4549,7 @@ export interface paths {
                                 status: "OPEN" | "PENDING" | "CLOSED_WON" | "CLOSED_LOST" | "CANCELLED";
                                 /** Format: date-time */
                                 closedAt: string | null;
+                                contractExpiryDate: string | null;
                                 /** Format: date-time */
                                 createdAt: string;
                                 /** Format: date-time */
@@ -4227,8 +4584,6 @@ export interface paths {
                         /** Format: uuid */
                         buyerContactId?: string;
                         /** Format: uuid */
-                        sellerContactId?: string;
-                        /** Format: uuid */
                         agentUserId: string;
                         /** @enum {string} */
                         dealType: "SALE" | "RENT";
@@ -4242,6 +4597,8 @@ export interface paths {
                          * @enum {string}
                          */
                         status?: "OPEN" | "PENDING" | "CLOSED_WON" | "CLOSED_LOST" | "CANCELLED";
+                        /** Format: date */
+                        contractExpiryDate?: string;
                     };
                 };
             };
@@ -4276,10 +4633,24 @@ export interface paths {
                             status: "OPEN" | "PENDING" | "CLOSED_WON" | "CLOSED_LOST" | "CANCELLED";
                             /** Format: date-time */
                             closedAt: string | null;
+                            contractExpiryDate: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
                             updatedAt: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
                         };
                     };
                 };
@@ -4339,6 +4710,7 @@ export interface paths {
                             status: "OPEN" | "PENDING" | "CLOSED_WON" | "CLOSED_LOST" | "CANCELLED";
                             /** Format: date-time */
                             closedAt: string | null;
+                            contractExpiryDate: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -4420,8 +4792,8 @@ export interface paths {
                         status?: "OPEN" | "PENDING" | "CLOSED_WON" | "CLOSED_LOST" | "CANCELLED";
                         /** Format: uuid */
                         buyerContactId?: string;
-                        /** Format: uuid */
-                        sellerContactId?: string;
+                        /** Format: date */
+                        contractExpiryDate?: string | null;
                     };
                 };
             };
@@ -4456,6 +4828,7 @@ export interface paths {
                             status: "OPEN" | "PENDING" | "CLOSED_WON" | "CLOSED_LOST" | "CANCELLED";
                             /** Format: date-time */
                             closedAt: string | null;
+                            contractExpiryDate: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -5907,6 +6280,97 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/translate/property-content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Translate Albanian listing title/description into English and German */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        title: string;
+                        description?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            title: {
+                                en: string;
+                                de: string;
+                            };
+                            description: {
+                                en: string;
+                                de: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            code: string;
+                            message: string;
+                            details?: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/uploads/sign": {
         parameters: {
             query?: never;
@@ -6302,6 +6766,7 @@ export interface paths {
                                     [key: string]: unknown;
                                 };
                                 coverImageUrl: string | null;
+                                coverVideoUrl: string | null;
                                 publishedDate: string | null;
                                 /** Format: date-time */
                                 createdAt: string;
@@ -6332,7 +6797,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a published property by code, with images */
+        /** Get a published property by code, with images and videos */
         get: {
             parameters: {
                 query?: never;
@@ -6403,6 +6868,7 @@ export interface paths {
                                 [key: string]: unknown;
                             };
                             coverImageUrl: string | null;
+                            coverVideoUrl: string | null;
                             publishedDate: string | null;
                             /** Format: date-time */
                             createdAt: string;
@@ -6411,6 +6877,12 @@ export interface paths {
                                 id: string;
                                 imageUrl: string;
                                 isCover: boolean;
+                                sortOrder: number;
+                            }[];
+                            videos: {
+                                /** Format: uuid */
+                                id: string;
+                                videoUrl: string;
                                 sortOrder: number;
                             }[];
                         };
@@ -6516,8 +6988,6 @@ export interface paths {
                         /** Format: email */
                         email?: string;
                         message?: string;
-                        /** @enum {string} */
-                        contactType?: "BUYER" | "TENANT" | "OWNER" | "LANDLORD";
                         /** Format: uuid */
                         propertyId?: string;
                         propertyCode?: string;
@@ -6626,7 +7096,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Owner submits a property to the agency — creates an OWNER contact + a DRAFT listing for review */
+        /** Owner submits a property to the agency - creates a contact + a DRAFT listing for review */
         post: {
             parameters: {
                 query?: never;

@@ -50,7 +50,7 @@ export default function ActivitiesPage() {
   });
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Activities"
         subtitle={`${data?.meta.total ?? 0} logged interactions`}
@@ -117,7 +117,7 @@ function ActivityModal({ onClose, onSubmit, pending }: { onClose: () => void; on
         }}
         className="space-y-4"
       >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Type">
             <Select value={f.type} onChange={(e) => set('type', e.target.value)}>
               {TYPES.map((t) => (
@@ -127,7 +127,7 @@ function ActivityModal({ onClose, onSubmit, pending }: { onClose: () => void; on
           </Field>
           <Field label="Contact">
             <Select value={f.contactId} onChange={(e) => set('contactId', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {contacts.data?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.fullName}
@@ -137,7 +137,7 @@ function ActivityModal({ onClose, onSubmit, pending }: { onClose: () => void; on
           </Field>
           <Field label="Property">
             <Select value={f.propertyId} onChange={(e) => set('propertyId', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {props.data?.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.propertyCode}

@@ -31,7 +31,7 @@ export interface Property {
   cadastralZone?: string;
   /** Living / usable area in m². */
   area: number;
-  /** Plot (land) area in m² — for houses, villas and land. */
+  /** Plot (land) area in m² - for houses, villas and land. */
   plotArea?: number;
   bedrooms?: number;
   bathrooms?: number;
@@ -51,6 +51,10 @@ export interface Property {
   terrace?: boolean;
   airConditioning?: boolean;
   images: string[];
+  /** Primary video URL - plays on hover over the property card. */
+  videoUrl?: string;
+  /** All property video URLs, in order - shown in the detail-page gallery. */
+  videos?: string[];
   agentId: string;
   isFeatured: boolean;
   createdAt: string;

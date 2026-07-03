@@ -2,36 +2,58 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PropertyGrid } from "@/components/PropertyGrid";
-import { useProperties, useAgents } from "@/hooks/useApi";
+import { useProperties, useAgents, useLocationLookups } from "@/hooks/useApi";
 import { CTASection } from "@/components/CTASection";
 import { TeamCard } from "@/components/TeamCard";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { testimonials } from "@/data/testimonials";
-import { FAQAccordion } from "@/components/FAQAccordion";
-import { faqs } from "@/data/faqs";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Building2, Home, Landmark, Briefcase, Trees, Factory, ShieldCheck, Award, Clock, Search, ChevronDown, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useT } from "@/i18n/useT";
+import { useLanguage } from "@/i18n/context";
+import { Seo } from "@/components/Seo";
+import { organizationJsonLd } from "@/lib/seo";
 
 export default function HomePage() {
   const { t, tEnum } = useT();
+  const { language } = useLanguage();
+  // Albanian uses the Shqip moto; English & German use the English one.
+  const motoSrc = language === "sq" ? "/moto_shqip.png" : "/moto.png";
   const { data: properties = [] } = useProperties();
   const { data: agents = [] } = useAgents();
   const featuredProperties = properties.filter(p => p.isFeatured).slice(0, 3);
   const latestProperties = [...properties].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3);
-  const homeFaqs = faqs.slice(0, 4);
   const [, setLocation] = useLocation();
+  const { data: locations } = useLocationLookups();
   const [activeTab, setActiveTab] = useState<"Sale" | "Rent">("Sale");
   const [selectedType, setSelectedType] = useState("all");
+  const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
+  const [selectedArea, setSelectedArea] = useState("all");
+  const [selectedCadastralZone, setSelectedCadastralZone] = useState("all");
+  const [selectedBedrooms, setSelectedBedrooms] = useState("any");
+
+  // Cascading location options (country → city → area / cadastral zone), mirrors the
+  // pronat sidebar filters in SearchFilters.
+  const selectedCountryObj = locations?.countries.find((c) => c.name === selectedCountry);
+  const cities = locations?.cities.filter((c) => selectedCountry === "all" || c.countryId === selectedCountryObj?.id) ?? [];
+  const selectedCityObj = cities.find((c) => c.name === selectedCity);
+  const areas = locations?.areas.filter((a) => selectedCity === "all" || a.cityId === selectedCityObj?.id) ?? [];
+  const cadastralZones = locations?.cadastralZones.filter((z) => selectedCity === "all" || z.cityId === selectedCityObj?.id) ?? [];
+
+  const heroSelectClass = "w-full bg-transparent text-white text-[13px] py-4 px-5 appearance-none cursor-pointer focus:outline-none";
 
   const runHeroSearch = () => {
     const params = new URLSearchParams();
     params.set("status", activeTab);
     if (selectedType !== "all") params.set("type", selectedType);
+    if (selectedCountry !== "all") params.set("country", selectedCountry);
     if (selectedCity !== "all") params.set("city", selectedCity);
+    if (selectedArea !== "all") params.set("area", selectedArea);
+    if (selectedCadastralZone !== "all") params.set("cadastralZone", selectedCadastralZone);
+    if (selectedBedrooms !== "any") params.set("bedrooms", selectedBedrooms);
     setLocation(`/properties?${params.toString()}`);
   };
 
@@ -46,10 +68,17 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Seo
+        title={t("seo.homeTitle")}
+        description={t("seo.homeDescription")}
+        keywords={t("seo.homeKeywords")}
+        path="/"
+        jsonLd={organizationJsonLd()}
+      />
       <Header />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative h-screen min-h-[640px] flex flex-col justify-center overflow-hidden">
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden py-28 lg:py-32">
 
         {/* Background */}
         <div className="absolute inset-0">
@@ -63,21 +92,19 @@ export default function HomePage() {
         </div>
 
         {/* Centred content */}
-        <div className="relative z-10 flex flex-col items-center text-center px-6 mt-8">
+        <div className="relative z-10 flex flex-col items-center text-center px-6">
 
-          {/* Eyebrow */}
-          <motion.div
+          {/* Moto (replaces the eyebrow tagline) */}
+          <motion.img
+            key={motoSrc}
+            src={motoSrc}
+            alt="MADEM. Beyond Property, Legacy"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center gap-3 mb-8"
-          >
-            <div className="w-8 h-px bg-[#F3D8A5]/70" />
-            <span className="text-[#F3D8A5] tracking-[0.24em] text-[11px] uppercase font-medium">
-              {t("home.eyebrow")}
-            </span>
-            <div className="w-8 h-px bg-[#F3D8A5]/70" />
-          </motion.div>
+            className="mb-8 h-auto w-[280px] max-w-[85vw] select-none sm:w-[380px] lg:w-[500px]"
+            draggable={false}
+          />
 
           {/* Headline */}
           <motion.h1
@@ -129,7 +156,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45 }}
-            className="w-full max-w-3xl"
+            className="w-full max-w-5xl"
             style={{
               background: "rgba(255,255,255,0.07)",
               backdropFilter: "blur(20px)",
@@ -138,16 +165,16 @@ export default function HomePage() {
               boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
             }}
           >
-            <div className="flex flex-col sm:flex-row items-stretch">
+            <div>
               {/* Sale / Rent */}
-              <div className="flex sm:border-r border-white/10">
+              <div className="flex border-b border-white/10">
                 {(["Sale", "Rent"] as const).map(tab => (
                   <button
                     key={tab}
                     type="button"
                     data-testid={`hero-tab-${tab.toLowerCase()}`}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 sm:flex-none px-5 py-4 text-[11px] font-medium uppercase tracking-[0.16em] transition-colors duration-150 ${
+                    className={`flex-1 sm:flex-none px-6 py-4 text-[11px] font-medium uppercase tracking-[0.16em] transition-colors duration-150 ${
                       activeTab === tab
                         ? "bg-[#F3D8A5] text-[#0B3A36]"
                         : "text-white/55 hover:text-white"
@@ -158,50 +185,124 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Type */}
-              <div className="relative flex-1 border-t sm:border-t-0 sm:border-r border-white/10">
-                <select
-                  value={selectedType}
-                  onChange={e => setSelectedType(e.target.value)}
-                  data-testid="hero-select-type"
-                  className="w-full h-full bg-transparent text-white text-[13px] py-4 px-5 appearance-none cursor-pointer focus:outline-none"
-                >
-                  <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allTypes")}</option>
-                  <option value="Apartment" className="bg-[#0B3A36]">{tEnum("propertyType", "Apartment")}</option>
-                  <option value="House" className="bg-[#0B3A36]">{tEnum("propertyType", "House")}</option>
-                  <option value="Villa" className="bg-[#0B3A36]">{tEnum("propertyType", "Villa")}</option>
-                  <option value="Office" className="bg-[#0B3A36]">{tEnum("propertyType", "Office")}</option>
-                  <option value="Commercial" className="bg-[#0B3A36]">{tEnum("propertyType", "Commercial")}</option>
-                  <option value="Land" className="bg-[#0B3A36]">{tEnum("propertyType", "Land")}</option>
-                </select>
-                <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
+              {/* Filters - mirrors the pronat sidebar filters. Two per row on mobile,
+                  three on desktop, with location filters paired together. */}
+              <div className="grid grid-cols-2 lg:grid-cols-3">
+                {/* Country */}
+                <div className="relative border-b border-r border-white/10">
+                  <select
+                    value={selectedCountry}
+                    onChange={e => {
+                      setSelectedCountry(e.target.value);
+                      setSelectedCity("all");
+                      setSelectedArea("all");
+                      setSelectedCadastralZone("all");
+                    }}
+                    data-testid="hero-select-country"
+                    className={heroSelectClass}
+                  >
+                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allCountries")}</option>
+                    {locations?.countries.map(c => (
+                      <option key={c.id} value={c.name} className="bg-[#0B3A36]">{c.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
 
-              {/* City */}
-              <div className="relative flex-1 border-t sm:border-t-0 sm:border-r border-white/10">
-                <select
-                  value={selectedCity}
-                  onChange={e => setSelectedCity(e.target.value)}
-                  data-testid="hero-select-city"
-                  className="w-full h-full bg-transparent text-white text-[13px] py-4 px-5 appearance-none cursor-pointer focus:outline-none"
-                >
-                  <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allCities")}</option>
-                  <option value="Prishtine" className="bg-[#0B3A36]">Prishtinë</option>
-                  <option value="Prizren" className="bg-[#0B3A36]">Prizren</option>
-                  <option value="Peje" className="bg-[#0B3A36]">Pejë</option>
-                  <option value="Gjakove" className="bg-[#0B3A36]">Gjakovë</option>
-                  <option value="Ferizaj" className="bg-[#0B3A36]">Ferizaj</option>
-                  <option value="Gjilan" className="bg-[#0B3A36]">Gjilan</option>
-                  <option value="Mitrovice" className="bg-[#0B3A36]">Mitrovicë</option>
-                </select>
-                <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                {/* City */}
+                <div className="relative border-b lg:border-r border-white/10">
+                  <select
+                    value={selectedCity}
+                    onChange={e => {
+                      setSelectedCity(e.target.value);
+                      setSelectedArea("all");
+                      setSelectedCadastralZone("all");
+                    }}
+                    data-testid="hero-select-city"
+                    className={heroSelectClass}
+                  >
+                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allCities")}</option>
+                    {cities.map(c => (
+                      <option key={c.id} value={c.name} className="bg-[#0B3A36]">{c.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                {/* Area / neighborhood */}
+                <div className="relative border-b border-r border-white/10">
+                  <select
+                    value={selectedArea}
+                    onChange={e => setSelectedArea(e.target.value)}
+                    data-testid="hero-select-area"
+                    className={heroSelectClass}
+                  >
+                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allAreas")}</option>
+                    {areas.map(a => (
+                      <option key={a.id} value={a.name} className="bg-[#0B3A36]">{a.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                {/* Cadastral zone */}
+                <div className="relative border-b lg:border-r border-white/10">
+                  <select
+                    value={selectedCadastralZone}
+                    onChange={e => setSelectedCadastralZone(e.target.value)}
+                    data-testid="hero-select-cadastral"
+                    className={heroSelectClass}
+                  >
+                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allCadastralZones")}</option>
+                    {cadastralZones.map(z => (
+                      <option key={z.id} value={z.name} className="bg-[#0B3A36]">{z.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                {/* Type */}
+                <div className="relative border-b border-r border-white/10">
+                  <select
+                    value={selectedType}
+                    onChange={e => setSelectedType(e.target.value)}
+                    data-testid="hero-select-type"
+                    className={heroSelectClass}
+                  >
+                    <option value="all" className="bg-[#0B3A36]">{t("searchFilters.allTypes")}</option>
+                    <option value="Apartment" className="bg-[#0B3A36]">{tEnum("propertyType", "Apartment")}</option>
+                    <option value="House" className="bg-[#0B3A36]">{tEnum("propertyType", "House")}</option>
+                    <option value="Villa" className="bg-[#0B3A36]">{tEnum("propertyType", "Villa")}</option>
+                    <option value="Office" className="bg-[#0B3A36]">{tEnum("propertyType", "Office")}</option>
+                    <option value="Commercial" className="bg-[#0B3A36]">{tEnum("propertyType", "Commercial")}</option>
+                    <option value="Land" className="bg-[#0B3A36]">{tEnum("propertyType", "Land")}</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
+                {/* Bedrooms */}
+                <div className="relative border-b border-white/10">
+                  <select
+                    value={selectedBedrooms}
+                    onChange={e => setSelectedBedrooms(e.target.value)}
+                    data-testid="hero-select-bedrooms"
+                    className={heroSelectClass}
+                  >
+                    <option value="any" className="bg-[#0B3A36]">{t("searchFilters.bedrooms")}</option>
+                    <option value="1" className="bg-[#0B3A36]">1+</option>
+                    <option value="2" className="bg-[#0B3A36]">2+</option>
+                    <option value="3" className="bg-[#0B3A36]">3+</option>
+                    <option value="4" className="bg-[#0B3A36]">4+</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-white/30 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
 
               {/* Search button */}
               <button
                 onClick={runHeroSearch}
                 data-testid="hero-search-button"
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-[#F3D8A5] text-[#0B3A36] font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-[#EBCB8F] transition-colors duration-200 border-t sm:border-t-0"
+                className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-[#F3D8A5] text-[#0B3A36] font-semibold text-[11px] uppercase tracking-[0.18em] hover:bg-[#EBCB8F] transition-colors duration-200"
               >
                 <Search className="w-4 h-4" />
                 <span>{t("common.search")}</span>
@@ -222,7 +323,7 @@ export default function HomePage() {
 
       {/* Categories */}
       <section className="py-16 bg-white border-b border-gray-100">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {categories.map((cat, idx) => (
               <Link key={idx} href={`/properties?type=${cat.name.toLowerCase()}`} className="flex flex-col items-center justify-center p-6 border border-gray-100 rounded-lg hover:border-[#0B3A36] hover:bg-gray-50 transition-colors group">
@@ -237,7 +338,7 @@ export default function HomePage() {
 
       {/* Featured Properties */}
       <section className="py-24">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
               <h2 className="font-serif text-4xl text-[#0B3A36] font-bold mb-4">{t("home.featuredTitle")}</h2>
@@ -254,7 +355,7 @@ export default function HomePage() {
 
       {/* Why Choose Us */}
       <section className="py-24 bg-[#0B3A36] text-white">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <span className="text-[#F3D8A5] tracking-[0.2em] text-xs uppercase font-semibold mb-4 block">{t("home.standardEyebrow")}</span>
@@ -309,7 +410,7 @@ export default function HomePage() {
 
       {/* Latest Properties */}
       <section className="py-24">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
               <h2 className="font-serif text-4xl text-[#0B3A36] font-bold mb-4">{t("home.latestTitle")}</h2>
@@ -337,7 +438,7 @@ export default function HomePage() {
 
       {/* Agents */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl text-[#0B3A36] font-bold mb-4">{t("home.expertsTitle")}</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">{t("home.expertsSubtitle")}</p>
@@ -359,36 +460,28 @@ export default function HomePage() {
 
       {/* Statistics */}
       <section className="py-20 bg-[#F3D8A5] text-[#0B3A36]">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-[#0B3A36]/20">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-2 gap-8 text-center divide-x divide-[#0B3A36]/20 max-w-2xl mx-auto">
             <div>
-              <p className="font-serif text-4xl md:text-5xl font-bold mb-2">500+</p>
+              <p className="font-serif text-4xl md:text-5xl font-bold mb-2">200+</p>
               <p className="text-xs uppercase tracking-widest font-medium">{t("home.statProperties")}</p>
             </div>
             <div>
-              <p className="font-serif text-4xl md:text-5xl font-bold mb-2">12</p>
+              <p className="font-serif text-4xl md:text-5xl font-bold mb-2">5</p>
               <p className="text-xs uppercase tracking-widest font-medium">{t("home.statYears")}</p>
-            </div>
-            <div>
-              <p className="font-serif text-4xl md:text-5xl font-bold mb-2">98%</p>
-              <p className="text-xs uppercase tracking-widest font-medium">{t("home.statClients")}</p>
-            </div>
-            <div>
-              <p className="font-serif text-4xl md:text-5xl font-bold mb-2">7</p>
-              <p className="text-xs uppercase tracking-widest font-medium">{t("home.statCities")}</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Testimonials - hidden
       <section className="py-24">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl text-[#0B3A36] font-bold mb-4">{t("home.testimonialsTitle")}</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">{t("home.testimonialsSubtitle")}</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.slice(0, 3).map(testimonial => (
               <TestimonialCard key={testimonial.id} testimonial={testimonial} />
@@ -396,24 +489,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* FAQ Preview */}
-      <section className="py-24 bg-white border-t border-gray-100">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-16">
-            <h2 className="font-serif text-4xl text-[#0B3A36] font-bold mb-4">{t("home.faqTitle")}</h2>
-            <p className="text-gray-600">{t("home.faqSubtitle")}</p>
-          </div>
-          
-          <FAQAccordion faqs={homeFaqs} />
-          
-          <div className="text-center mt-12">
-            <Link href="/faq" className="text-[#0B3A36] font-medium uppercase tracking-wider text-sm hover:text-[#EBCB8F] transition-colors">
-              {t("home.readAllFaqs")} <span className="ml-2">→</span>
-            </Link>
-          </div>
-        </div>
-      </section>
+      */}
 
       <Footer />
     </div>

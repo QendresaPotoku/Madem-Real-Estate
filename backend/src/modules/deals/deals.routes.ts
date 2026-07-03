@@ -4,6 +4,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { Deal, Property } from '../../entities';
 import { AppError } from '../../lib/errors';
 import { paginate } from '../../lib/pagination';
+import { regenerateDealExpiryReminders } from './reminders.service';
 import {
   currencySchema,
   errorResponseSchema,
@@ -28,15 +29,16 @@ const response = z.object({
   currency: z.string(),
   status: z.enum(DEAL_STATUSES),
   closedAt: z.date().nullable(),
+  contractExpiryDate: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
+// Seller is derived from the property's owner, so it is not a client-supplied field.
 const createBody = z.object({
   propertyId: z.string().uuid(),
   opportunityId: z.string().uuid().optional(),
   buyerContactId: z.string().uuid().optional(),
-  sellerContactId: z.string().uuid().optional(),
   agentUserId: z.string().uuid(),
   dealType: z.enum(DEAL_TYPES),
   finalPrice: z.number().min(0).optional(),
@@ -44,6 +46,7 @@ const createBody = z.object({
   commissionPaid: z.boolean().optional(),
   currency: currencySchema,
   status: z.enum(DEAL_STATUSES).default('OPEN'),
+  contractExpiryDate: z.string().date().optional(),
 });
 
 const updateBody = z.object({
@@ -52,7 +55,7 @@ const updateBody = z.object({
   commissionPaid: z.boolean().optional(),
   status: z.enum(DEAL_STATUSES).optional(),
   buyerContactId: z.string().uuid().optional(),
-  sellerContactId: z.string().uuid().optional(),
+  contractExpiryDate: z.string().date().nullable().optional(),
 });
 
 const listQuery = paginationQuerySchema.extend({
@@ -83,13 +86,24 @@ export async function dealRoutes(app: FastifyInstance) {
       return row;
     });
 
-  r.post('/', { schema: { tags: ['deals'], body: createBody, response: { 201: response } } },
+  r.post('/', { schema: { tags: ['deals'], body: createBody, response: { 201: response, 404: errorResponseSchema } } },
     async (req, reply) => {
-      const saved = await repo().save(repo().create({
-        ...req.body,
-        commissionPaid: req.body.status === 'CLOSED_WON' ? req.body.commissionPaid ?? false : false,
-      }));
-      return reply.status(201).send(await repo().findOneByOrFail({ id: saved.id }));
+      const deal = await app.db.transaction(async (manager) => {
+        const dealRepo = manager.getRepository(Deal);
+        // Seller is the property's owner - derive it server-side.
+        const property = await manager.getRepository(Property).findOneBy({ id: req.body.propertyId });
+        if (!property) throw AppError.notFound('Property');
+        const saved = await dealRepo.save(dealRepo.create({
+          ...req.body,
+          sellerContactId: property.ownerContactId,
+          commissionPaid: req.body.status === 'CLOSED_WON' ? req.body.commissionPaid ?? false : false,
+        }));
+        // Reload so the DB-trigger-generated `code` is present before building reminders.
+        const full = await dealRepo.findOneByOrFail({ id: saved.id });
+        await regenerateDealExpiryReminders(manager, full);
+        return full;
+      });
+      return reply.status(201).send(deal);
     });
 
   r.patch('/:id', { schema: { tags: ['deals'], summary: 'Update a deal (closing it transitions the property status)', params: uuidParamSchema, body: updateBody, response: { 200: response, 404: errorResponseSchema } } },
@@ -110,6 +124,9 @@ export async function dealRoutes(app: FastifyInstance) {
           const newStatus = deal.dealType === 'SALE' ? 'SOLD' : 'RENTED';
           await manager.getRepository(Property).update({ id: deal.propertyId }, { status: newStatus });
         }
+
+        // Keep rent-expiry reminders in sync with the (possibly changed) date/status.
+        await regenerateDealExpiryReminders(manager, deal);
         return deal;
       });
     });

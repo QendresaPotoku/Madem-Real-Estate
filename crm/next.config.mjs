@@ -7,6 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Self-contained server bundle for Docker/Cloud Run (.next/standalone/server.js).
+  output: 'standalone',
   // Pin tracing root to this folder (a stray lockfile in the home dir confuses Next).
   outputFileTracingRoot: __dirname,
   // Proxy API calls to the Fastify backend so the session cookie stays first-party.

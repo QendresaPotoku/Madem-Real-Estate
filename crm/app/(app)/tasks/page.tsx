@@ -40,7 +40,7 @@ function TasksInner() {
   const [deleting, setDeleting] = useState<Row | null>(null);
 
   const agents = useAgents();
-  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '—' : '—');
+  const agentName = (id: string | null) => (id ? agents.data?.find((a) => a.id === id)?.fullName ?? '-' : '-');
   const me = useQuery({ queryKey: ['me'], queryFn: async () => (await api.GET('/api/auth/me')).data });
 
   // URL is the source of truth for filters/sort/page, so views are shareable.
@@ -134,7 +134,7 @@ function TasksInner() {
   const totalPages = data?.meta.totalPages ?? 1;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         title="Tasks"
         subtitle={`${data?.meta.total ?? 0} tasks`}
@@ -145,7 +145,7 @@ function TasksInner() {
         }
       />
 
-      <div className="mb-4 grid grid-cols-3 gap-3">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <MetricButton
           label="Overdue"
           value={summary.overdue}
@@ -221,7 +221,7 @@ function TasksInner() {
                 <StatusBadge value={t.priority} map={PRIORITY_STYLES} />
               </td>
               <td className={`px-4 py-3 whitespace-nowrap ${late ? 'font-medium text-red-600' : 'text-gray-600'}`}>
-                {t.dueDate ? formatDate(t.dueDate) : '—'}
+                {t.dueDate ? formatDate(t.dueDate) : '-'}
                 {late && <span className="ml-1 text-xs">(overdue)</span>}
               </td>
               <td className="px-4 py-3">
@@ -418,10 +418,10 @@ function TaskModal({ row, onClose, onSubmit, pending }: { row?: Row; onClose: ()
         <Field label="Description">
           <Textarea value={f.description} onChange={(e) => set('description', e.target.value)} />
         </Field>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Assignee">
             <Select value={f.assignedTo} onChange={(e) => set('assignedTo', e.target.value)}>
-              <option value="">—</option>
+              <option value="">-</option>
               {agents.data?.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.fullName}

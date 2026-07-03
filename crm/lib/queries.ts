@@ -8,7 +8,7 @@ export type LocationLookups = {
   cadastralZones: Array<{ id: string; cityId: string; name: string }>;
 };
 
-/** Agents (users with role AGENT) — for assignment dropdowns. */
+/** Agents (users with role AGENT) - for assignment dropdowns. */
 export function useAgents() {
   return useQuery({
     queryKey: ['agents'],
@@ -16,12 +16,13 @@ export function useAgents() {
   });
 }
 
-/** Contacts — for owner/buyer/seller pickers. Optional type filter. */
-export function useContacts(contactType?: 'OWNER' | 'BUYER' | 'TENANT' | 'LANDLORD' | 'INVESTOR') {
+/** Contacts - for owner/buyer/seller pickers. Roles are derived from relationships,
+ *  so every picker draws from the same flat list of contacts. */
+export function useContacts() {
   return useQuery({
-    queryKey: ['contacts-options', contactType ?? 'all'],
+    queryKey: ['contacts-options'],
     queryFn: async () =>
-      (await api.GET('/api/contacts', { params: { query: { limit: 100, ...(contactType ? { contactType } : {}) } } })).data?.data ?? [],
+      (await api.GET('/api/contacts', { params: { query: { limit: 100 } } })).data?.data ?? [],
   });
 }
 

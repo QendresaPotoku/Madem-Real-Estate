@@ -7,7 +7,7 @@ import { User } from './user.entity';
 import { numericTransformer } from '../lib/transformers';
 import { DEAL_STATUSES, DEAL_TYPES, type DealStatus, type DealType } from '../schemas/enums';
 
-/** Finalized sale or rent transaction — the central settlement record. */
+/** Finalized sale or rent transaction - the central settlement record. */
 @Entity({ name: 'deals' })
 @Index(['status'])
 export class Deal extends AbstractEntity {
@@ -70,4 +70,8 @@ export class Deal extends AbstractEntity {
 
   @Column({ type: 'timestamptz', name: 'closed_at', nullable: true })
   closedAt!: Date | null;
+
+  /** For RENT deals: the rental contract end date that drives expiry reminders. */
+  @Column({ type: 'date', name: 'contract_expiry_date', nullable: true })
+  contractExpiryDate!: string | null;
 }

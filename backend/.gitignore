@@ -3,3 +3,8 @@ dist
 .env
 *.log
 openapi.json
+
+# Google service-account keys - never commit these
+gcp-service-account.json
+*service-account*.json
+*.gcp.json

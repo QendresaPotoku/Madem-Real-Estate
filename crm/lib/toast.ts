@@ -42,7 +42,20 @@ export const toast = {
 /** Pull a human message out of an API error body / Error / unknown. */
 export function errorMessage(err: unknown): string {
   if (err && typeof err === 'object') {
-    const e = err as { message?: string; code?: string };
+    const e = err as {
+      message?: string;
+      code?: string;
+      details?: Array<{ message?: string; params?: { issue?: { path?: Array<string | number> } } }>;
+    };
+    // Validation errors carry per-field detail; surface the first one so the user
+    // sees "password: String must contain at least 8 character(s)" rather than the
+    // generic "Request validation failed".
+    if (Array.isArray(e.details) && e.details.length > 0) {
+      const d = e.details[0];
+      const field = (d.params?.issue?.path ?? []).filter((p) => p !== '').join('.');
+      const msg = d.message ?? 'Invalid value';
+      return field ? `${field}: ${msg}` : msg;
+    }
     if (typeof e.message === 'string') return e.message;
   }
   if (err instanceof Error) return err.message;

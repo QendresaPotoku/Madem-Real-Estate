@@ -104,9 +104,9 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-6 flex items-end justify-between">
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold text-brand">{title}</h1>
+        <h1 className="text-xl font-semibold text-brand sm:text-2xl">{title}</h1>
         {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
       </div>
       {action}
@@ -130,15 +130,15 @@ export function Modal({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 py-10">
-      <div className={cn('flex max-h-[90vh] w-full flex-col rounded-2xl bg-white shadow-xl', wide ? 'max-w-3xl' : 'max-w-lg')}>
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-2 py-4 sm:p-4 sm:py-10">
+      <div className={cn('flex max-h-[94vh] w-full flex-col rounded-2xl bg-white shadow-xl sm:max-h-[90vh]', wide ? 'max-w-3xl' : 'max-w-lg')}>
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-4 py-4 sm:px-6">
           <h2 className="text-lg font-semibold text-brand">{title}</h2>
           <button onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="overflow-y-auto px-6 py-5">{children}</div>
+        <div className="overflow-y-auto px-4 py-5 sm:px-6">{children}</div>
       </div>
     </div>
   );
@@ -148,10 +148,13 @@ export function Modal({
 export function Table({ head, children }: { head: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">{head}</thead>
-        <tbody className="divide-y divide-gray-100">{children}</tbody>
-      </table>
+      {/* Scroll horizontally on small screens instead of crushing/clipping columns. */}
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-sm">
+          <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">{head}</thead>
+          <tbody className="divide-y divide-gray-100">{children}</tbody>
+        </table>
+      </div>
     </Card>
   );
 }

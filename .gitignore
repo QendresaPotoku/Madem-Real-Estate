@@ -16,3 +16,12 @@ npm-debug.log*
 # OS / editor cruft
 .DS_Store
 Thumbs.db
+
+# local deploy config
+deploy/config.env
+
+# Claude Code memory (local dev notes, not project code)
+memory/
+
+# Stray root lockfile (there is no root package.json)
+/package-lock.json

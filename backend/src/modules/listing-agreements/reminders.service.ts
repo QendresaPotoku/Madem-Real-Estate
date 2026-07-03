@@ -32,8 +32,8 @@ export async function regenerateAgreementExpiryReminders(
         remindAt: endDateMinusDays(agreement.endDate, days),
         message:
           days === 0
-            ? `Listing agreement ${agreement.code} expires today — renew or terminate the mandate.`
-            : `Listing agreement ${agreement.code} expires in ${days} day(s) — follow up with the owner.`,
+            ? `Listing agreement ${agreement.code} expires today. Renew or terminate the mandate.`
+            : `Listing agreement ${agreement.code} expires in ${days} day(s). Follow up with the owner.`,
         status: 'PENDING',
       }),
     );

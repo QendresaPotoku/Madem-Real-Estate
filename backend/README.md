@@ -1,4 +1,4 @@
-# MADEM CRM — Backend
+# MADEM CRM - Backend
 
 Fastify + TypeORM + PostgreSQL API for the MADEM real-estate CRM. Single deployable, with an in-process cron for contract reminders. Zod schemas are the source of truth and emit the OpenAPI spec the frontends generate their client from.
 
@@ -13,7 +13,7 @@ Fastify + TypeORM + PostgreSQL API for the MADEM real-estate CRM. Single deploya
 
 ## Setup
 ```bash
-# from repo root — start Postgres (+ MinIO)
+# from repo root - start Postgres (+ MinIO)
 docker compose up -d postgres minio
 
 cd backend
@@ -51,18 +51,18 @@ src/
   seed/                seed script
 ```
 
-## Implemented — backend complete (45 endpoints)
-- **DB layer** — all 17 tables + 2 lookups; ref-code triggers (`M-`, `CN-`, `OP-`, `DL-`, `CT-`, `LA-`), partial unique indexes (one cover/property, one active exclusive listing, one active rental), CHECK constraints, GIN + tsvector full-text search.
-- **Auth** — `login` (rate-limited 10/min) / `me` / `logout` (httpOnly cookie, argon2), `authGuard` + `roleGuard`.
-- **Users** — admin-only staff/agent CRUD (`/api/users`) with password hashing; deactivate instead of hard-delete.
-- **Lookups** — heating-types, document-types.
+## Implemented - backend complete (45 endpoints)
+- **DB layer** - all 17 tables + 2 lookups; ref-code triggers (`M-`, `CN-`, `OP-`, `DL-`, `CT-`, `LA-`), partial unique indexes (one cover/property, one active exclusive listing, one active rental), CHECK constraints, GIN + tsvector full-text search.
+- **Auth** - `login` (rate-limited 10/min) / `me` / `logout` (httpOnly cookie, argon2), `authGuard` + `roleGuard`.
+- **Users** - admin-only staff/agent CRUD (`/api/users`) with password hashing; deactivate instead of hard-delete.
+- **Lookups** - heating-types, document-types.
 - **Contacts**, **Properties** (filters + FTS + `attributes_json`), **Listing agreements**.
-- **Pipeline** — Opportunities, **Matches** (scoring engine), Viewings, Offers.
-- **Settlement** — Deals (close → property SOLD/RENTED), Contracts (+ auto reminders 30/7/0d, dismissed on terminate), Commissions + Splits (sum=100 enforced).
-- **Ops** — Activities, Tasks.
-- **Media** — `POST /api/uploads/sign` (presigned PUT), property images (add / reorder / set-cover / delete), property documents (add / verify status / delete / **presigned download URL**). MinIO bucket auto-created with public-read scoped to `properties/*` + `avatars/*` (documents stay private, retrieved via presigned GET).
-- **Dashboard** — `GET /api/dashboard/summary` (KPIs, pipeline counts, due reminders) + `/featured`.
-- **Public (no auth)** — `GET /api/public/properties` (ACTIVE only), `/properties/:code` (with images), `/agents`, `POST /api/public/leads` (creates contact + opportunity + activity, rate-limited).
+- **Pipeline** - Opportunities, **Matches** (scoring engine), Viewings, Offers.
+- **Settlement** - Deals (close → property SOLD/RENTED), Contracts (+ auto reminders 30/7/0d, dismissed on terminate), Commissions + Splits (sum=100 enforced).
+- **Ops** - Activities, Tasks.
+- **Media** - `POST /api/uploads/sign` (presigned PUT), property images (add / reorder / set-cover / delete), property documents (add / verify status / delete / **presigned download URL**). MinIO bucket auto-created with public-read scoped to `properties/*` + `avatars/*` (documents stay private, retrieved via presigned GET).
+- **Dashboard** - `GET /api/dashboard/summary` (KPIs, pipeline counts, due reminders) + `/featured`.
+- **Public (no auth)** - `GET /api/public/properties` (ACTIVE only), `/properties/:code` (with images), `/agents`, `POST /api/public/leads` (creates contact + opportunity + activity, rate-limited).
 - OpenAPI spec at `/docs/json`, Swagger UI at `/docs`.
 
 ## Deployment

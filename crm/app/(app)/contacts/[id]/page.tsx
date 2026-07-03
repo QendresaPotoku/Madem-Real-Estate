@@ -4,9 +4,9 @@ import { use, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Plus } from 'lucide-react';
-import { api, req } from '@/lib/api';
+import { api, req, tx } from '@/lib/api';
 import { toast } from '@/lib/toast';
-import { Button, Card, Field, Modal, PageHeader, Select, StatusBadge, Textarea } from '@/components/ui';
+import { Badge, Button, Card, Field, Modal, PageHeader, Select, StatusBadge, Textarea } from '@/components/ui';
 
 const ACTIVITY_TYPES = ['CALL', 'MEETING', 'MESSAGE', 'NOTE', 'FOLLOW_UP'] as const;
 
@@ -27,6 +27,10 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
     queryKey: ['opportunities', { contactId: id }],
     queryFn: async () => (await api.GET('/api/opportunities', { params: { query: { contactId: id, limit: 50 } } })).data?.data ?? [],
   });
+  const { data: linkedProps } = useQuery({
+    queryKey: ['contact-properties', id],
+    queryFn: async () => (await api.GET('/api/contacts/{id}/properties', { params: { path: { id } } })).data ?? [],
+  });
 
   const logActivity = useMutation({
     mutationFn: async (body: { type: string; note?: string }) =>
@@ -41,13 +45,13 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
   if (!c) return <div className="p-8 text-sm text-gray-400">Loading…</div>;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <Link href="/contacts" className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand">
         <ArrowLeft className="h-4 w-4" /> Contacts
       </Link>
       <PageHeader
         title={c.fullName}
-        subtitle={`${c.code} · ${c.contactType}`}
+        subtitle={c.code}
         action={
           <Button onClick={() => setLogging(true)}>
             <Plus className="h-4 w-4" /> Log activity
@@ -59,15 +63,42 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
         <Card className="h-fit p-5">
           <h3 className="mb-3 text-sm font-semibold text-gray-700">Details</h3>
           <dl className="space-y-2 text-sm">
-            <Row label="Phone" value={c.phone ?? '—'} />
-            <Row label="Email" value={c.email ?? '—'} />
-            <Row label="ID number" value={c.idNumber ?? '—'} />
+            <Row label="Phone" value={c.phone ?? '-'} />
+            <Row label="Email" value={c.email ?? '-'} />
+            <Row label="ID number" value={c.idNumber ?? '-'} />
             <Row label="Source" value={c.source} />
             {c.notes && <p className="border-t border-gray-100 pt-2 text-gray-600">{c.notes}</p>}
           </dl>
         </Card>
 
         <div className="space-y-6 lg:col-span-2">
+          <h2 className="-mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">History</h2>
+
+          <Card className="p-5">
+            <h3 className="mb-3 text-sm font-semibold text-gray-700">Properties ({linkedProps?.length ?? 0})</h3>
+            {!linkedProps?.length ? (
+              <p className="text-sm text-gray-400">No related properties.</p>
+            ) : (
+              <ul className="divide-y divide-gray-100 text-sm">
+                {linkedProps.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between gap-2 py-2">
+                    <Link href={`/properties/${p.id}`} className="min-w-0 truncate text-gray-700 hover:text-brand hover:underline">
+                      {p.propertyCode} · {tx(p.titleJson)}
+                    </Link>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {p.roles.map((role) => (
+                        <Badge key={role} className="bg-gray-100 text-gray-600">
+                          {role}
+                        </Badge>
+                      ))}
+                      <StatusBadge value={p.status} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
           <Card className="p-5">
             <h3 className="mb-3 text-sm font-semibold text-gray-700">Opportunities ({opps?.length ?? 0})</h3>
             {!opps?.length ? (
@@ -75,10 +106,13 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
             ) : (
               <ul className="divide-y divide-gray-100 text-sm">
                 {opps.map((o) => (
-                  <li key={o.id} className="flex items-center justify-between py-2">
-                    <span className="text-gray-700">
+                  <li key={o.id} className="flex items-center justify-between gap-2 py-2">
+                    <Link
+                      href={`/opportunities?opportunityId=${o.id}`}
+                      className="min-w-0 truncate text-gray-700 hover:text-brand hover:underline"
+                    >
                       {o.code} · {o.listingType} {o.propertyType}
-                    </span>
+                    </Link>
                     <StatusBadge value={o.status} />
                   </li>
                 ))}

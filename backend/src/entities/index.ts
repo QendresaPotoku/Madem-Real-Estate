@@ -5,6 +5,7 @@ export { User } from './user.entity';
 export { Contact } from './contact.entity';
 export { Property } from './property.entity';
 export { PropertyImage } from './property-image.entity';
+export { PropertyVideo } from './property-video.entity';
 export { PropertyDocument } from './property-document.entity';
 export { ListingAgreement } from './listing-agreement.entity';
 export { AgreementReminder } from './agreement-reminder.entity';
@@ -13,6 +14,7 @@ export { Match } from './match.entity';
 export { Viewing } from './viewing.entity';
 export { Offer } from './offer.entity';
 export { Deal } from './deal.entity';
+export { DealReminder } from './deal-reminder.entity';
 export { Contract } from './contract.entity';
 export { ContractReminder } from './contract-reminder.entity';
 export { Commission } from './commission.entity';
@@ -27,6 +29,7 @@ import { User } from './user.entity';
 import { Contact } from './contact.entity';
 import { Property } from './property.entity';
 import { PropertyImage } from './property-image.entity';
+import { PropertyVideo } from './property-video.entity';
 import { PropertyDocument } from './property-document.entity';
 import { ListingAgreement } from './listing-agreement.entity';
 import { AgreementReminder } from './agreement-reminder.entity';
@@ -35,6 +38,7 @@ import { Match } from './match.entity';
 import { Viewing } from './viewing.entity';
 import { Offer } from './offer.entity';
 import { Deal } from './deal.entity';
+import { DealReminder } from './deal-reminder.entity';
 import { Contract } from './contract.entity';
 import { ContractReminder } from './contract-reminder.entity';
 import { Commission } from './commission.entity';
@@ -55,6 +59,7 @@ export const entities = [
   Contact,
   Property,
   PropertyImage,
+  PropertyVideo,
   PropertyDocument,
   ListingAgreement,
   AgreementReminder,
@@ -63,6 +68,7 @@ export const entities = [
   Viewing,
   Offer,
   Deal,
+  DealReminder,
   Contract,
   ContractReminder,
   Commission,

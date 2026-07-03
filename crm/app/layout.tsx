@@ -4,7 +4,7 @@ import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'MADEM CRM',
-  description: 'MADEM Real Estate — internal CRM',
+  description: 'MADEM Real Estate - internal CRM',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

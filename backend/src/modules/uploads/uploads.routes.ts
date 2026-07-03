@@ -12,6 +12,10 @@ const ALLOWED_CONTENT_TYPES = new Set([
   'image/webp',
   'image/avif',
   'application/pdf',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+  'video/ogg',
 ]);
 
 const signBody = z.object({
