@@ -12,7 +12,7 @@ interface ApiProperty {
   propertyType: "APARTMENT" | "HOUSE" | "VILLA" | "PENTHOUSE" | "LAND" | "OFFICE" | "SHOP" | "WAREHOUSE" | "BUILDING";
   titleJson: Localized;
   descriptionJson: Localized | null;
-  price: number;
+  price: number | null;
   country: string;
   city: string;
   area: string | null;
@@ -94,7 +94,7 @@ function mapProperty(p: ApiProperty, images?: string[], videos?: string[]): Prop
     title: p.titleJson ?? EMPTY_LOCALIZED,
     type: TYPE_MAP[p.propertyType] ?? "Apartment",
     status,
-    price: p.price,
+    price: p.price ?? 0,
     country: p.country,
     city: p.city,
     neighborhood: p.area ?? "",
