@@ -54,7 +54,7 @@ interface ApiAgent {
 }
 interface Paged<T> {
   data: T[];
-  meta: { total: number };
+  meta: { total: number; totalPages: number };
 }
 export interface LocationLookups {
   countries: Array<{ id: string; name: string }>;
@@ -147,8 +147,22 @@ async function getJson<T>(url: string): Promise<T> {
 }
 
 export async function fetchProperties(): Promise<Property[]> {
-  const json = await getJson<Paged<ApiProperty>>("/api/public/properties?limit=100&sort=createdAt&order=DESC");
-  return json.data.map((p) => mapProperty(p, p.imageUrls));
+  const firstPage = await getJson<Paged<ApiProperty>>("/api/public/properties?limit=100&sort=createdAt&order=DESC");
+  if (firstPage.meta.totalPages <= 1) {
+    return firstPage.data.map((p) => mapProperty(p, p.imageUrls));
+  }
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: firstPage.meta.totalPages - 1 }, (_, index) =>
+      getJson<Paged<ApiProperty>>(
+        `/api/public/properties?page=${index + 2}&limit=100&sort=createdAt&order=DESC`,
+      ),
+    ),
+  );
+
+  return [firstPage, ...remainingPages].flatMap((page) =>
+    page.data.map((p) => mapProperty(p, p.imageUrls)),
+  );
 }
 
 export async function fetchProperty(code: string): Promise<Property> {
